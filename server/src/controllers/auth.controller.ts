@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { verifyOtp } from "../utils/otpStore";
+import { signJwt } from "../utils/jwt";
 
 export async function registerUser(req: Request, res: Response) {
   try {
@@ -45,9 +46,13 @@ export async function registerUser(req: Request, res: Response) {
       },
     });
 
+    // -- -- -- -- -- sign jwt -- -- -- -- --
+    const token = signJwt({ id: newUser.id, role: newUser.role });
+
     return res.status(201).json({
       message: "User created successfully",
       data: { user: { name: newUser.name, phone: newUser.phone } },
+      token,
     });
   } catch (error) {
     console.log("AUTH_REGISTER_ERROR:", error);
@@ -84,9 +89,13 @@ export async function loginUser(req: Request, res: Response) {
       return res.status(404).json({ message: "User not registered" });
     }
 
+    // -- -- -- -- -- sign jwt -- -- -- -- --
+    const token = signJwt({ id: user.id, role: user.role });
+
     return res.status(200).json({
       message: "Login successful",
       data: { user: { name: user.name, phone: user.phone } },
+      token,
     });
   } catch (error) {
     console.log("AUTH_LOGIN_ERROR:", error);

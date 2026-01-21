@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
 
 const JWT_SECRET: Secret = process.env.JWT_SECRET as Secret;
@@ -10,7 +11,7 @@ if (!process.env.JWT_SECRET) {
 
 export type JwtPayload = {
   id: string;
-  role: string;
+  role: Role;
 };
 
 export function signJwt(payload: JwtPayload): string {

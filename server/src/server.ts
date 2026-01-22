@@ -6,6 +6,7 @@ import { attachUserMiddleware } from "./middlewares/auth.middleware";
 import authRoutes from "./routes/auth.route";
 import adminRoutes from "./routes/admin.route";
 import tableRoutes from "./routes/table.route";
+import categoryRoutes from "./routes/category.route";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ export function startServer() {
   app.use("/auth", authRoutes);
   app.use("/admin", adminRoutes);
   app.use("/table", tableRoutes);
+  app.use("/categories", categoryRoutes);
 
   const PORT = Number(process.env.PORT) || 5000;
   app.listen(PORT, () => {

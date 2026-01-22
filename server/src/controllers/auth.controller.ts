@@ -38,7 +38,7 @@ export async function registerUser(req: Request, res: Response) {
         ? name.trim()
         : "world";
 
-    // -- create the user --
+    // -- -- -- -- -- create the user -- -- -- -- --
     const newUser = await prisma.user.create({
       data: {
         name: finalName,

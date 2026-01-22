@@ -10,7 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - pghungrybuy:/var/lib/postgresql/data/
-  
+
   server:
     build:
       context: ./server
@@ -21,7 +21,7 @@ services:
       - postgres
     ports:
       - "5000:5000"
-  
+
   client:
     build:
       context: ./client
@@ -32,6 +32,17 @@ services:
       - server
     ports:
       - "3000:3000"
+
+  admin:
+    build:
+      context: ./admin
+    container_name: hungrybuy-admin
+    env_file:
+      - ./admin/.env
+    depends_on:
+      - server
+    ports:
+      - "8000:8000"
 
 volumes:
   pghungrybuy:

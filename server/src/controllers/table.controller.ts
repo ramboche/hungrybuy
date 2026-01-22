@@ -59,3 +59,25 @@ export async function getAllTables(req: AuthenticatedRequest, res: Response) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+export async function resolveQr(req: AuthenticatedRequest, res: Response) {
+  try {
+    const { qrToken } = req.params;
+
+    if (!qrToken || Array.isArray(qrToken)) {
+      return res.status(400).json({ message: "Invalid QR token" });
+    }
+
+    const table = await prisma.table.findUnique({ where: { qrToken } });
+    if (!table) {
+      return res.status(404).json({ message: "Table not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Table resolved successfully", data: { table } });
+  } catch (error) {
+    console.log("TABLE_RESOLVE_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}

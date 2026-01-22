@@ -42,3 +42,20 @@ export async function createTable(req: AuthenticatedRequest, res: Response) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+export async function getAllTables(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userRole = req.headers["x-user-role"];
+    if (userRole !== "ADMIN" && userRole !== "SHOP") {
+      return res.status(401).json({ message: "Forbidden" });
+    }
+
+    const tables = await prisma.table.findMany({ orderBy: { number: "asc" } });
+    return res
+      .status(200)
+      .json({ message: "Fetched all tables", data: { tables } });
+  } catch (error) {
+    console.log("TABLE_GET_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}

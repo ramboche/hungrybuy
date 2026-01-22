@@ -3,76 +3,34 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_DIRECT")
 }
 
-enum FoodType {
-  VEG
-  NON_VEG
+enum Role {
+  USER
+  SHOP
+  ADMIN
 }
 
-enum OrderStatus {
-  PLACED
-  CANCELLED
-  COMPLETED
-}
-
-enum PaymentStatus {
-  PENDING
-  CANCELLED
-  FAILED
-  SUCCESS
-}
-
-model Category {
+model User {
   id       String  @id @default(uuid())
+  phone    String? @unique
+  email    String? @unique
   name     String
-  isActive Boolean
-
-  items Item[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Item {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  image       String?
-  type        FoodType
-
-  isFeatured  Boolean @default(false)
-  isAvailable Boolean @default(true)
-
-  categoryId String
-  category   Category    @relation(fields: [categoryId], references: [id])
-  orderItems OrderItem[]
-}
-
-model Order {
-  id          String @id @default(uuid())
-  phone       String
-  tableNumber String
-  total       Float
-
-  orderStatus   OrderStatus   @default(PLACED)
-  paymentStatus PaymentStatus @default(PENDING)
-
-  orderItem OrderItem[]
+  password String?
+  role     Role    @default(USER)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model OrderItem {
-  id       String @id @default(uuid())
-  orderId  String
-  itemId   String
-  quantity Int
-  price    Float
+model Table {
+  id      String @id @default(uuid())
+  number  Int    @unique
+  qrToken String @unique
 
-  order Order @relation(fields: [orderId], references: [id])
-  item  Item  @relation(fields: [itemId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

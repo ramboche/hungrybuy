@@ -185,3 +185,39 @@ export async function getAllVariants(req: AuthenticatedRequest, res: Response) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+export async function updateVariant(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userRole = req.headers["x-user-role"];
+    if (userRole !== "ADMIN" && userRole !== "SHOP") {
+      return res.status(401).json({ message: "Forbidden" });
+    }
+
+    const { menuItemId, variantId } = req.params;
+    if (!menuItemId || Array.isArray(menuItemId)) {
+      return res.status(400).json({ message: "Invalid item ID" });
+    }
+
+    if (!variantId || Array.isArray(variantId)) {
+      return res.status(400).json({ message: "Invalid variant ID" });
+    }
+
+    const { label, price } = req.body;
+
+    const updatedVariant = await prisma.menuVariant.update({
+      where: { id: variantId },
+      data: {
+        ...(label !== undefined && { label }),
+        ...(price !== undefined && { price: Number(price) }),
+      },
+    });
+
+    return res.status(200).json({
+      message: "Updated successfully",
+      data: { variant: updatedVariant },
+    });
+  } catch (error) {
+    console.log("UPDATE_VARIANT_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}

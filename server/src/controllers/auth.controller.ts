@@ -74,10 +74,6 @@ export async function loginUser(req: Request, res: Response) {
       return res.status(400).json({ message: "OTP is required" });
     }
 
-    if (verifyOtp(phone, otp) === false) {
-      return res.status(401).json({ message: "Invalid OTP" });
-    }
-
     // -- -- -- -- -- check if user exists -- -- -- -- --
     const user = await prisma.user.findUnique({
       where: {
@@ -86,7 +82,12 @@ export async function loginUser(req: Request, res: Response) {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not registered" });
+      return registerUser(req, res);
+    }
+
+    // -- -- -- -- -- verify otp -- -- -- -- --
+    if (verifyOtp(phone, otp) === false) {
+      return res.status(401).json({ message: "Invalid OTP" });
     }
 
     // -- -- -- -- -- sign jwt -- -- -- -- --

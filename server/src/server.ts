@@ -8,6 +8,7 @@ import adminRoutes from "./routes/admin.route";
 import tableRoutes from "./routes/table.route";
 import categoryRoutes from "./routes/category.route";
 import menuRoutes from "./routes/menu.route";
+import cartRoutes from "./routes/cart.route";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ export function startServer() {
   app.use("/table", tableRoutes);
   app.use("/categories", categoryRoutes);
   app.use("/menu", menuRoutes);
+  app.use("/cart", cartRoutes)
 
   const PORT = Number(process.env.PORT) || 5000;
   app.listen(PORT, () => {

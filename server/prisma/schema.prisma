@@ -119,7 +119,7 @@ model Order {
   tableId String
   status  OrderStatus @default(PENDING)
 
-  orders OrderItem[]
+  items OrderItem[]
 
   createdAt DateTime @default(now())
 

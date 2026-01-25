@@ -19,6 +19,13 @@ enum FoodType {
   NON_VEG
 }
 
+enum OrderStatus {
+  PENDING
+  CANCELLED
+  SERVED
+  PAID
+}
+
 model User {
   id       String  @id @default(uuid())
   phone    String? @unique
@@ -60,8 +67,9 @@ model MenuItem {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
 
-  variants  MenuVariant[]
-  cartItems CartItem[]
+  variants   MenuVariant[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -78,7 +86,8 @@ model MenuVariant {
   menuItemId String
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
 
-  cartItems CartItem[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAT DateTime @updatedAt
@@ -103,4 +112,34 @@ model CartItem {
 
   @@unique([tableId, menuItemId, variantId])
   @@index([tableId])
+}
+
+model Order {
+  id      String      @id @default(uuid())
+  tableId String
+  status  OrderStatus @default(PENDING)
+
+  orders OrderItem[]
+
+  createdAt DateTime @default(now())
+
+  @@index([tableId])
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+
+  variantId String?
+  variant   MenuVariant? @relation(fields: [variantId], references: [id])
+
+  quantity Int
+  price    Int
+
+  createdAt DateTime @default(now())
 }

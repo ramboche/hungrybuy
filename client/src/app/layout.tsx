@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import { AuthProvider } from '@/context/AuthContext';
+import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
 // Configure the font
@@ -15,12 +17,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={poppins.className}>{children}</body>
+      <body className={poppins.className}>
+        {/* WRAP CHILDREN IN AUTHPROVIDER */}
+        <AuthProvider>
+          {children}
+          <Toaster position="top-center" /> {/* This shows the success/error popups */}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

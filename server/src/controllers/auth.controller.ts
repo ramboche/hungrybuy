@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
-import { verifyOtp } from "../utils/otpStore";
+import { deleteOtp, verifyOtp } from "../utils/otpStore";
 import { signJwt } from "../utils/jwt";
 
 export async function registerUser(req: Request, res: Response) {

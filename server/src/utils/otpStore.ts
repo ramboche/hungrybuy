@@ -53,7 +53,6 @@ export function verifyOtp(phone: string, otp: string): boolean {
   return true;
 }
 
-
 export function deleteOtp(phone: string) {
   otpStore.delete(phone);
 }

@@ -1,38 +1,36 @@
 'use client';
 
-import { ChevronLeft, Trash2, Plus, Minus } from 'lucide-react';
+import { ChevronLeft, Minus, Plus } from 'lucide-react';
 import Image from 'next/image';
-import { PRODUCTS } from '@/lib/constants'; 
+// import { PRODUCTS } from '@/lib/constants'; // Only used for Image lookup fallback
+import { BackendCartItem } from '@/lib/types';
 
-// Define the shape of data coming from your Context/Backend
-interface BackendCartItem {
-  id: string;
-  quantity: number;
-  menuItem: {
-    id: string;
-    name: string;
-    price: number | null;
-  };
-  variant?: {
-    label: string;
-    price: number;
-  } | null;
-}
 
 interface CartPageProps {
-  cartItems: BackendCartItem[]; // <--- Updated to Array
-  totalAmount: number;          // <--- Passed from Parent
+  cartItems: BackendCartItem[]; 
+  totalAmount: number; // Expecting Integers (cents) from parent calculation
   onBack: () => void;
   onIncrease: (cartItemId: string) => void;
   onDecrease: (cartItemId: string) => void;
 }
 
-export default function CartPage({ cartItems, totalAmount, onBack, onIncrease, onDecrease }: CartPageProps) {
+export default function CartPage({ 
+  cartItems, 
+  totalAmount, 
+  onBack, 
+  onIncrease, 
+  onDecrease 
+}: CartPageProps) {
   
-  // Helper to find image based on name (Since DB doesn't have images yet)
+  // Helper: Lookup image from constants because DB doesn't have images yet
   const getProductImage = (name: string) => {
-    const found = PRODUCTS.find(p => p.name.toLowerCase() === name.toLowerCase());
-    return found?.image || '/images/burgers.jpeg'; // Fallback image
+    // const found = PRODUCTS.find(p => p.name.toLowerCase() === name.toLowerCase());
+    return '/images/burgers.jpeg';
+  };
+
+  // Helper: Format Cents to Dollars (799 -> 7.99)
+  const formatPrice = (cents: number) => {
+    return (cents / 100).toFixed(2);
   };
 
   return (
@@ -40,17 +38,20 @@ export default function CartPage({ cartItems, totalAmount, onBack, onIncrease, o
       
       {/* --- HEADER --- */}
       <div className="flex items-center justify-between px-6 py-6 shrink-0">
-        <button onClick={onBack} className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-brand-dark active:scale-90 transition-transform">
+        <button 
+          onClick={onBack} 
+          className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-brand-dark active:scale-90 transition-transform"
+        >
           <ChevronLeft size={24} />
         </button>
         <h1 className="text-xl font-bold text-brand-dark">Your Order</h1>
-        <div className="w-10"></div> {/* Spacer for alignment */}
+        <div className="w-10"></div>
       </div>
 
       {/* --- SCROLLABLE LIST --- */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-6 pb-32 space-y-4">
         
-        {/* Table Info Card */}
+        {/* Table Status Card */}
         <div className="bg-white rounded-3xl p-4 flex items-center justify-between shadow-sm mb-6">
           <div className="flex items-center gap-4">
              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-brand-red">
@@ -66,15 +67,15 @@ export default function CartPage({ cartItems, totalAmount, onBack, onIncrease, o
           </span>
         </div>
 
-        {/* Cart Items */}
+        {/* Cart Items List */}
         {cartItems.length > 0 ? (
           cartItems.map((item) => {
-            // Determine Price (Variant Price > Base Price)
-            const price = item.variant ? item.variant.price : (item.menuItem.price || 0);
+            // Priority: Variant Price > Base Menu Price
+            const rawPrice: number = item.variant ? item.variant.price : item.menuItem.price!;
 
             return (
               <div key={item.id} className="bg-white rounded-3xl p-3 flex gap-4 shadow-sm">
-                {/* Image */}
+                {/* Image (Local Lookup) */}
                 <div className="relative w-24 h-24 shrink-0 bg-gray-100 rounded-2xl overflow-hidden">
                   <Image 
                     src={getProductImage(item.menuItem.name)} 
@@ -84,21 +85,22 @@ export default function CartPage({ cartItems, totalAmount, onBack, onIncrease, o
                   />
                 </div>
 
-                {/* Info */}
+                {/* Info (Backend Data) */}
                 <div className="flex-1 flex flex-col justify-between py-1">
                   <div>
                     <h3 className="font-bold text-brand-dark text-sm line-clamp-1">
                       {item.menuItem.name}
                     </h3>
                     <p className="text-[10px] text-gray-400 mt-0.5">
+                      {/* Backend uses 'label' for variants */}
                       {item.variant ? item.variant.label : 'Standard'}
                     </p>
                     <div className="mt-1 font-bold text-brand-red">
-                      $ {price.toFixed(2)}
+                      $ {formatPrice(rawPrice)}
                     </div>
                   </div>
 
-                  {/* Counter */}
+                  {/* Quantity Controls */}
                   <div className="flex justify-end">
                      <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-1">
                         <button 
@@ -128,12 +130,13 @@ export default function CartPage({ cartItems, totalAmount, onBack, onIncrease, o
 
       </div>
 
-      {/* --- BOTTOM ACTION BAR --- */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-white via-white to-transparent pt-20">
+      {/* --- FOOTER / TOTAL --- */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pt-20">
         <button className="w-full bg-brand-red text-white font-bold py-4 rounded-3xl shadow-lg shadow-red-200 active:scale-95 transition-transform flex justify-between items-center px-6">
           <span>Place Order</span>
           <span className="bg-white/20 px-3 py-1 rounded-lg text-sm">
-            $ {totalAmount.toFixed(2)}
+            {/* Total Amount passed from parent (in cents) */}
+            $ {formatPrice(totalAmount)}
           </span>
         </button>
       </div>

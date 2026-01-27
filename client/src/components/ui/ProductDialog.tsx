@@ -46,7 +46,7 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
     onClose();
   };
 
-  const sizeList = product.sizes || [];
+  const sizeList = product.variants || [];
 
   return (
     <>
@@ -79,15 +79,15 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
         {/* List */}
         <div className="overflow-y-auto px-6 py-2 space-y-4 scrollbar-hide min-h-25">
           {sizeList.map((size) => (
-            <div key={size.name} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+            <div key={size.label} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
               <div>
-                <span className="font-semibold text-sm sm:text-base text-brand-dark block">{size.name}</span>
+                <span className="font-semibold text-sm sm:text-base text-brand-dark block">{size.label}</span>
                 <span className="text-brand-red font-bold text-sm sm:text-base">$ {size.price.toFixed(2)}</span>
               </div>
               <QuantityBtn 
-                count={quantities[size.name] || 0}
-                onIncrease={() => handleIncrease(size.name)}
-                onDecrease={() => handleDecrease(size.name)}
+                count={quantities[size.label] || 0}
+                onIncrease={() => handleIncrease(size.label)}
+                onDecrease={() => handleDecrease(size.label)}
               />
             </div>
           ))}

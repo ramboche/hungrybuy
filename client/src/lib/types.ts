@@ -25,3 +25,18 @@ export interface Product {
   rating?: number;
   qty?: number;
 }
+
+export interface BackendCartItem {
+  id: string;
+  quantity: number;
+  menuItem: {
+    id: string;
+    name: string;
+    price: number | null; // Expecting Integers (e.g., 799 for $7.99)
+  };
+  variant?: {
+    id: string;
+    label: string;
+    price: number; // Expecting Integers
+  } | null;
+}

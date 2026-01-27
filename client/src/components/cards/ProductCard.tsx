@@ -15,13 +15,13 @@ interface Props {
 }
 
 export default function ProductCard({ product, cartQty, onAddClick, onIncrease, onDecrease }: Props) {
-  const hasSizes = product.sizes && product.sizes.length > 0;
+  const hasSizes = product.variants && product.variants.length > 0;
 
   const handleCounterClick = hasSizes ? onAddClick : onIncrease;
   const handleCounterDecrease = hasSizes ? onAddClick : onDecrease;
 
   const displayPrice = hasSizes 
-    ? Math.min(...product.sizes!.map(s => s.price)) 
+    ? Math.min(...product.variants!.map(s => s.price)) 
     : product.price;
 
   return (
@@ -31,10 +31,10 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
       {/* Image: Slightly smaller on tiny screens (w-28) -> Standard (w-32) */}
       <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 self-center"> 
         <div className="w-full h-full rounded-2xl overflow-hidden relative bg-gray-100">
-             <RatingBadge rating={product.rating} />
+             <RatingBadge rating={product.rating!} />
              {/* Sizes prop helps browser load right image size */}
              <Image 
-               src={product.image} 
+               src={product.image!} 
                alt={product.name} 
                fill 
                className="object-cover transition-transform duration-500 group-hover:scale-110"

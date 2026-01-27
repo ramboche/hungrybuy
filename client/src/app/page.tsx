@@ -40,7 +40,7 @@ export default function Home() {
         const readyProducts = dbProducts.map((p: any) => ({
             ...p,
             image: '/images/burgers.jpeg', // Default image until DB has them
-            qty: 0
+            qty: 42,                   // Default qty for demo
         }));
 
         setProducts(readyProducts);

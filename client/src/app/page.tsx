@@ -33,8 +33,8 @@ export default function Home() {
     const fetchMenu = async () => {
       try {
         const res = await api.get('/menu');
-        // Backend returns: { data: { menu: [...] } } or { data: [...] }
-        const dbProducts = res.data.data.menu || res.data.data;
+        console.log(res)
+        const dbProducts = res.data.data.items;
         
         // Just add the fields missing from DB (image, qty)
         const readyProducts = dbProducts.map((p: any) => ({

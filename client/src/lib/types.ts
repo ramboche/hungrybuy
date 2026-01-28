@@ -40,3 +40,11 @@ export interface BackendCartItem {
     price: number; // Expecting Integers
   } | null;
 }
+
+export interface Table {
+  id: string;
+  number: number;
+  qrToken: string;
+  createdAt: string;
+  updatedAt: string;
+}

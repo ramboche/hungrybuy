@@ -63,6 +63,9 @@ model MenuItem {
   foodType    FoodType
   price       Int?
   isAvailable Boolean  @default(true)
+  image       String?
+  rating      Float    @default(0)
+  ratingCount Int      @default(0)
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
@@ -79,9 +82,10 @@ model MenuItem {
 }
 
 model MenuVariant {
-  id    String @id @default(uuid())
+  id    String  @id @default(uuid())
   label String
   price Int
+  image String?
 
   menuItemId String
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
@@ -119,7 +123,7 @@ model Order {
   tableId String
   status  OrderStatus @default(PENDING)
 
-  orders OrderItem[]
+  items OrderItem[]
 
   createdAt DateTime @default(now())
 

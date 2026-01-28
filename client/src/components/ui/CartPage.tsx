@@ -131,7 +131,7 @@ export default function CartPage({
       </div>
 
       {/* --- FOOTER / TOTAL --- */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pt-20">
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-white via-white to-transparent pt-20">
         <button className="w-full bg-brand-red text-white font-bold py-4 rounded-3xl shadow-lg shadow-red-200 active:scale-95 transition-transform flex justify-between items-center px-6">
           <span>Place Order</span>
           <span className="bg-white/20 px-3 py-1 rounded-lg text-sm">

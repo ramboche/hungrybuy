@@ -1,7 +1,16 @@
-import { prisma } from "../lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../utils/hash";
 
 export async function seedAdminUser() {
+
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL_DIRECT,
+      },
+    },
+  });
+
   try {
     const adminMail = process.env.ADMIN_MAIL;
     const adminPass = process.env.ADMIN_PASS;

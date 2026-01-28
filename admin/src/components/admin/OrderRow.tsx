@@ -1,4 +1,4 @@
-import { UtensilsCrossed, CheckCircle, Clock } from 'lucide-react';
+import { UtensilsCrossed, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Order, OrderStatus } from '@/lib/types';
 
 interface OrderRowProps {
@@ -8,23 +8,31 @@ interface OrderRowProps {
 
 export default function OrderRow({ order, onStatusClick }: OrderRowProps) {
   
+  // 1. Updated for new Enums
   const getStatusStyle = (status: OrderStatus) => {
     switch (status) {
-      case 'In Kitchen': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'Ready': return 'bg-green-100 text-green-700 border-green-200';
-      case 'Pending': return 'bg-red-50 text-red-600 border-red-100';
-      case 'Completed': return 'bg-gray-100 text-gray-500 border-gray-200';
+      case 'PENDING': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      case 'SERVED': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'PAID': return 'bg-green-100 text-green-700 border-green-200';
+      case 'CANCELLED': return 'bg-red-50 text-red-600 border-red-100';
       default: return 'bg-gray-100 text-gray-600';
     }
   };
 
   const getStatusIcon = (status: OrderStatus) => {
      switch(status) {
-        case 'In Kitchen': return <UtensilsCrossed size={14} />;
-        case 'Ready': return <CheckCircle size={14} />;
-        case 'Pending': return <Clock size={14} />;
+        case 'PENDING': return <Clock size={14} />;
+        case 'SERVED': return <UtensilsCrossed size={14} />;
+        case 'PAID': return <CheckCircle size={14} />;
+        case 'CANCELLED': return <XCircle size={14} />;
         default: return null;
      }
+  };
+
+  // 2. Format ISO String to Time (e.g., "12:30 PM")
+  const formatTime = (isoString: string) => {
+    if (!isoString) return '--:--';
+    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -35,12 +43,19 @@ export default function OrderRow({ order, onStatusClick }: OrderRowProps) {
           </div>
           <div>
              <h4 className="font-bold text-gray-900 text-base">Table {order.tableId}</h4>
-             <p className="text-sm text-gray-400 font-medium">Order {order.id} • {order.items.length} Items</p>
+             <p className="text-sm text-gray-400 font-medium">
+               {/* 3. Handle UUID display and 'orders' array */}
+               Order #{order.id.slice(0, 6)}... • {order.orders?.length || 0} Items
+             </p>
           </div>
        </div>
 
        <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
-          <span className="text-sm font-bold text-gray-500">{order.time}</span>
+          {/* 4. Use formatted time */}
+          <span className="text-sm font-bold text-gray-500">
+            {formatTime(order.createdAt)}
+          </span>
+          
           <button 
             onClick={(e) => { e.stopPropagation(); onStatusClick(); }}
             className={`px-4 py-2 rounded-xl text-xs font-bold border flex items-center gap-2 transition-all hover:brightness-95 active:scale-95 ${getStatusStyle(order.status)}`}

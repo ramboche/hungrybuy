@@ -1,11 +1,12 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { Table } from '@/lib/types';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (tableNum: string) => void;
-  currentTables: string[];
+  currentTables: Table[];
 }
 
 export default function AddTableModal({ isOpen, onClose, onAdd, currentTables }: Props) {

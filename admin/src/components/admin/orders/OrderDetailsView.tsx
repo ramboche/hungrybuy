@@ -53,31 +53,31 @@ export default function OrderDetailsView({ order, onBack, onComplete }: Props) {
              <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                <Clock size={12} /> {order.status}
              </span>
-             <span className="text-xs font-medium text-gray-400">{order.time}</span>
+             <span className="text-xs font-medium text-gray-400">{order.createdAt}</span>
           </div>
           <div className="relative z-10">
              <h1 className="text-3xl font-extrabold">Table #{order.tableId}</h1>
-             <p className="text-gray-400 text-sm mt-1">Dine-in • {order.items.length} Items</p>
+             <p className="text-gray-400 text-sm mt-1">Dine-in • {order.orders.length} Items</p>
           </div>
         </div>
 
         {/* Items */}
         <h3 className="font-bold text-gray-900 mb-4 text-sm">Order Items</h3>
         <div className="space-y-4 mb-8">
-          {order.items.map((item, idx) => (
+          {order.orders.map((item, idx) => (
             <div key={idx} className="flex gap-4 p-3 rounded-2xl border border-gray-100 bg-white shadow-sm">
                <div className="relative w-16 h-16 shrink-0">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl bg-gray-100" />
+                  <img src={item.menuItem?.image} alt={item.menuItem?.name} className="w-full h-full object-cover rounded-xl bg-gray-100" />
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-brand-red text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
                     {item.quantity}
                   </span>
                </div>
                <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <div className="flex justify-between items-start">
-                     <h4 className="font-bold text-gray-900 text-sm line-clamp-1">{item.name}</h4>
+                     <h4 className="font-bold text-gray-900 text-sm line-clamp-1">{item.menuItem?.name}</h4>
                      <span className="font-bold text-gray-900 text-sm">${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
-                  {item.notes && <p className="text-xs text-gray-500 mt-1 line-clamp-1">{item.notes}</p>}
+                  {item.menuItem?.description && <p className="text-xs text-gray-500 mt-1 line-clamp-1">{item.menuItem?.description}</p>}
                </div>
             </div>
           ))}
@@ -96,12 +96,12 @@ export default function OrderDetailsView({ order, onBack, onComplete }: Props) {
 
         {/* Summary */}
         <div className="bg-gray-50 rounded-2xl p-6 space-y-3">
-           <div className="flex justify-between text-sm text-gray-500">
-              <span>Subtotal</span><span>${order.subtotal.toFixed(2)}</span>
-           </div>
-           <div className="flex justify-between text-sm text-gray-500">
+           {/* <div className="flex justify-between text-sm text-gray-500">
+              <span>Subtotal</span><span>${order.totalAmount.toFixed(2)}</span>
+           </div> */}
+           {/* <div className="flex justify-between text-sm text-gray-500">
               <span>Tax (10%)</span><span>${order.tax.toFixed(2)}</span>
-           </div>
+           </div> */}
            <div className="h-px bg-gray-200 my-2" />
            <div className="flex justify-between text-lg font-extrabold text-brand-red">
               <span>Total</span><span>${order.totalAmount.toFixed(2)}</span>

@@ -15,6 +15,8 @@ import { INITIAL_ORDERS, ORDER_TABS, INITIAL_CATEGORIES, INITIAL_PRODUCTS } from
 import { RootState, AppDispatch } from '@/lib/store/store';
 import { logout } from '@/lib/store/features/authSlice';
 import { fetchTables, addTable, deleteTable } from '@/lib/store/features/tableSlice';
+import { fetchCategories, addCategory, deleteCategory } from '@/lib/store/features/categorySlice';
+import { fetchProducts, addProduct, updateProduct, deleteProduct } from '@/lib/store/features/menuSlice';
 
 // Components
 import AdminHeader from '@/components/admin/AdminHeader';
@@ -41,6 +43,8 @@ export default function AdminDashboard() {
   // 3. Get Auth & Tables State from Redux
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const { tables } = useSelector((state: RootState) => state.tables); // <--- Tables from Redux
+  const { categories } = useSelector((state: RootState) => state.categories);
+  const { products } = useSelector((state: RootState) => state.menu);
 
   // --- Hydration Fix ---
   useEffect(() => {
@@ -58,6 +62,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchTables());
+      dispatch(fetchCategories());
+      dispatch(fetchProducts());
     }
   }, [isAuthenticated, dispatch]);
 
@@ -72,9 +78,6 @@ export default function AdminDashboard() {
 
   // --- DATA STATE ---
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  // REMOVED: const [tables, setTables] = useState... (Now using Redux)
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
 
   // --- UI STATE ---
   const [activeTab, setActiveTab] = useState<OrderStatus | 'All'>('All');
@@ -138,26 +141,46 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSaveProduct = (productData: Omit<Product, 'id'>) => {
+  const handleSaveProduct = async (productData: any) => {
+    let result;
+
     if (editingProduct) {
-      setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...productData, id: p.id } : p));
+      // --- EDIT MODE ---
+      // Dispatch Update action with the existing ID
+      result = await dispatch(updateProduct({
+        ...productData,
+        id: editingProduct.id
+      }));
     } else {
-      setProducts(prev => [{ ...productData, id: Date.now().toString() }, ...prev]);
+      // --- ADD MODE ---
+      // Dispatch Add action (creates new)
+      result = await dispatch(addProduct(productData));
+    }
+
+    // Check success for either action
+    if (addProduct.fulfilled.match(result) || updateProduct.fulfilled.match(result)) {
+      setIsProductModalOpen(false);
+      setEditingProduct(null); // Clear editing state
+    } else {
+      alert("Failed to save product");
     }
   };
 
-  const handleDeleteProduct = (id: string) => { if (confirm("Delete this item?")) setProducts(prev => prev.filter(p => p.id !== id)); };
-
-  const handleAddCategory = (name: string) => {
-    const id = name.toLowerCase().replace(/\s+/g, '-');
-    if (!categories.find(c => c.id === id)) setCategories([...categories, { id, name }]);
+  const handleDeleteProduct = async (id: string) => {
+    if (confirm("Delete product?")) await dispatch(deleteProduct(id));
   };
 
-  const handleDeleteCategory = (id: string) => {
-    if (confirm("Delete category?")) {
-      setCategories(prev => prev.filter(c => c.id !== id));
-      if (activeCategory === id) setActiveCategory(categories[0]?.id || '');
+  const handleAddCategory = async (name: string) => {
+    const result = await dispatch(addCategory(name));
+    if (addCategory.fulfilled.match(result)) {
+      setIsCategoryModalOpen(false);
+    } else {
+      alert(result.payload || "Failed to add category");
     }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (confirm("Delete category?")) await dispatch(deleteCategory(id));
   };
 
   // --- STATS ---

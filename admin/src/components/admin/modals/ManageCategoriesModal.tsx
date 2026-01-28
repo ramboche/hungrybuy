@@ -1,6 +1,4 @@
-'use client';
-
-import { X, Trash2, GripVertical, Plus } from 'lucide-react';
+import { X, Trash2, Hash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Category } from '@/lib/types';
 
@@ -26,7 +24,8 @@ export default function ManageCategoriesModal({ isOpen, onClose, categories, onA
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      {/* Changed z-60 to z-50 to match other modals */}
       <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[80vh]">
         
         {/* Header */}
@@ -47,12 +46,13 @@ export default function ManageCategoriesModal({ isOpen, onClose, categories, onA
               className="flex-1 h-11 rounded-xl border border-gray-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red transition-all"
               value={newCatName}
               onChange={(e) => setNewCatName(e.target.value)}
+              autoFocus // Auto focus for better UX
             />
             <button 
               type="submit"
-              className="px-6 h-11 bg-brand-red text-white font-bold rounded-xl shadow-md shadow-red-100 active:scale-95 transition-transform"
+              className="px-6 h-11 bg-brand-red text-white font-bold rounded-xl shadow-md shadow-red-100 active:scale-95 transition-transform flex items-center justify-center"
             >
-              Add
+              <Plus size={20} />
             </button>
           </form>
         </div>
@@ -64,24 +64,32 @@ export default function ManageCategoriesModal({ isOpen, onClose, categories, onA
            </div>
            
            <div className="space-y-3">
-             {categories.map((cat) => (
-               <div key={cat.id} className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm group">
-                  <div className="flex items-center gap-3">
-                     <GripVertical size={16} className="text-gray-300 cursor-grab" />
-                     <div>
-                        <h4 className="text-sm font-bold text-gray-800">{cat.name}</h4>
-                        {/* Static item count for demo */}
-                        <p className="text-[10px] text-gray-400">8 items</p> 
-                     </div>
-                  </div>
-                  <button 
-                    onClick={() => onDelete(cat.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+             {categories.length > 0 ? (
+               categories.map((cat) => (
+                 <div key={cat.id} className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm group hover:border-brand-red/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                       {/* Replaced Drag Handle with Hash since we sort alphabetically */}
+                       <div className="p-2 bg-gray-50 rounded-lg text-gray-400">
+                         <Hash size={14} />
+                       </div>
+                       <div>
+                          <h4 className="text-sm font-bold text-gray-800">{cat.name}</h4>
+                       </div>
+                    </div>
+                    <button 
+                      onClick={() => onDelete(cat.id)}
+                      className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Category"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                 </div>
+               ))
+             ) : (
+               <div className="text-center py-10 text-gray-400 text-sm">
+                 No categories found. Add one above!
                </div>
-             ))}
+             )}
            </div>
         </div>
 

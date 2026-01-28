@@ -119,9 +119,10 @@ model CartItem {
 }
 
 model Order {
-  id      String      @id @default(uuid())
-  tableId String
-  status  OrderStatus @default(PENDING)
+  id       String      @id @default(uuid())
+  tableId  String
+  status   OrderStatus @default(PENDING)
+  isActive Boolean     @default(true)
 
   items OrderItem[]
 

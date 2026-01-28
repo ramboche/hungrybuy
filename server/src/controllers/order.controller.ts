@@ -58,6 +58,48 @@ export async function createOrder(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+export async function getActiveOrders(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  try {
+    const { tableId } = req.params;
+    if (!tableId || Array.isArray(tableId)) {
+      return res.status(400).json({ message: "Invalid table ID" });
+    }
+
+    const table = await prisma.table.findUnique({
+      where: { id: tableId },
+    });
+    if (!table) {
+      return res.status(404).json({ message: "Table not found" });
+    }
+
+    const orders = await prisma.order.findMany({
+      where: {
+        tableId,
+        isActive: true,
+      },
+      include: {
+        items: {
+          include: {
+            menuItem: true,
+            variant: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Fetched all active orders", data: { orders } });
+  } catch (error) {
+    console.log("GET_ACTIVE_ORDERS_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 export async function getAllOrders(req: AuthenticatedRequest, res: Response) {
   try {
     const userRole = req.headers["x-user-role"];
@@ -105,9 +147,17 @@ export async function updateOrderStatus(
       return res.status(400).json({ message: "Status is required" });
     }
 
+    let isActive = true;
+    if (status === "PAID") {
+      isActive = false;
+    }
+
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
-      data: { status },
+      data: {
+        status,
+        isActive,
+      },
       include: {
         items: {
           include: {

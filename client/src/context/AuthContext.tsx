@@ -1,13 +1,11 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react'; // Added useEffect back for router if needed, but removed for init
 import { useRouter } from 'next/navigation';
 
-// 1. Update User interface to match your backend response
 interface User {
   name: string;
   phone: string;
-  // id: string; // Removed 'id' because your backend doesn't return it yet
 }
 
 interface AuthContextType {
@@ -20,19 +18,25 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
+  // FIX: Lazy Initialize State
+  // Pass a function to useState. This runs ONLY once on mount.
+  const [user, setUser] = useState<User | null>(() => {
+    // Check for window to avoid SSR errors (Next.js specific)
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+      if (token && storedUser) {
+        return JSON.parse(storedUser);
+      }
     }
-    setIsLoading(false);
-  }, []);
+    return null;
+  });
+
+  // Since we initialize instantly, loading is technically always false 
+  // unless you are verifying the token with an API call.
+  const [isLoading] = useState(false);
 
   const login = (token: string, userData: User) => {
     localStorage.setItem('token', token);

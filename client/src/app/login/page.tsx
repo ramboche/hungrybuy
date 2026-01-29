@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast"; // --- INTEGRATION: For alerts
 import { api } from "@/lib/api"; // --- INTEGRATION: API Helper
 import { useAuth } from "@/context/AuthContext"; // --- INTEGRATION: Auth Context
+import { AxiosError } from 'axios';
+import Image from 'next/image';
 
 type Step = "PHONE" | "OTP";
 
@@ -51,9 +53,10 @@ export default function LoginPage() {
       setPhoneNumber(phone);
       setStep("OTP");
       toast.success("Code sent!");
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Failed to send code");
+      const err = error as AxiosError<{ message: string }>;
+      toast.error(err.response?.data?.message || "Failed to send code");
     } finally {
       setIsLoading(false);
     }
@@ -77,9 +80,11 @@ export default function LoginPage() {
 
       toast.success("Login Successful!");
       router.push("/");
-    } catch (error: any) {
+    } catch (error) {
+
+      const err = error as AxiosError<{ message: string }>;
       // 3. Handle 404 (User not found) -> Auto Register or Error
-      if (error.response?.status === 404) {
+      if (err.response?.status === 404) {
         try {
           // Optional: Auto-register if user doesn't exist
           const regRes = await api.post("/auth/register", {
@@ -95,7 +100,7 @@ export default function LoginPage() {
           toast.error("Registration failed.");
         }
       } else {
-        toast.error(error.response?.data?.message || "Invalid Code");
+        toast.error(err.response?.data?.message || "Invalid Code");
       }
     } finally {
       setIsLoading(false);
@@ -172,11 +177,15 @@ function PhoneStep({
         {/* ... (Images and Header - Unchanged) ... */}
         <div className="flex justify-center mt-6 mb-6 md:mt-10 md:mb-8 relative shrink-0">
           <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white shadow-lg flex items-center justify-center overflow-hidden relative z-10 p-1">
-            <img
-              src="/images/burgers.jpeg"
-              alt="Burger"
-              className="w-full h-full object-cover rounded-full"
-            />
+            <div className="relative w-full h-full"> {/* Parent MUST be relative */}
+              <Image
+                src="/images/burgers.jpeg"
+                alt="Burger"
+                fill
+                className="object-cover rounded-full"
+                sizes="100px" 
+              />
+            </div>
           </div>
           <div className="absolute bottom-2 right-[28%] bg-white p-2.5 rounded-full shadow-md z-20">
             <Heart className="w-5 h-5 text-brand-red fill-brand-red" />
@@ -371,7 +380,7 @@ function OtpStep({
       </div>
 
       <div className="text-center pt-4 shrink-0">
-        <p className="text-gray-500 text-sm mb-2">Didn't receive the code?</p>
+        <p className="text-gray-500 text-sm mb-2">Didn&apos;t receive the code?</p>
         <div className="flex items-center justify-center gap-2">
           <span className="text-brand-red font-bold cursor-pointer">
             Resend Code

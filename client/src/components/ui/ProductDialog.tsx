@@ -4,27 +4,21 @@ import { X } from 'lucide-react';
 import Image from 'next/image';
 import { Product } from '@/lib/types';
 import QuantityBtn from './QuantityButton';
-import { useState, useEffect } from 'react';
+import { useState } from 'react'; // REMOVED useEffect
 
 interface Props {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  // NEW: Receive existing data and return full object
-  initialData: Record<string, number>; 
+  initialData: Record<string, number>;
   onSave: (quantities: Record<string, number>) => void;
 }
 
 export default function ProductDialog({ product, isOpen, onClose, initialData, onSave }: Props) {
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    if (isOpen) {
-      // FIX: Load the existing data instead of resetting to empty
-      setQuantities(initialData || {});
-      console.log("Dialog Open. Loaded:", initialData);
-    }
-  }, [isOpen, product, initialData]);
+  
+  // FIX: Initialize state directly with initialData. 
+  // Because of the 'key' in page.tsx, this runs fresh every time the dialog opens.
+  const [quantities, setQuantities] = useState<Record<string, number>>(initialData || {});
 
   if (!isOpen || !product) return null;
 
@@ -41,8 +35,7 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
   };
 
   const handleSaveBtn = () => {
-    // Send the WHOLE object back to page.tsx, not just the total
-    onSave(quantities); 
+    onSave(quantities);
     onClose();
   };
 
@@ -51,24 +44,24 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
   return (
     <>
       <div className="absolute inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-[2px]" onClick={onClose} />
-      
+
       <div className="absolute bottom-0 left-0 right-0 bg-white z-50 rounded-t-3xl shadow-2xl animate-slide-up max-w-md mx-auto max-h-[85vh] flex flex-col">
-        
+
         {/* Header */}
         <div className="p-6 pb-2 shrink-0">
           <div className="flex justify-between items-start">
             <div className="flex gap-4">
-               <div className="w-16 h-16 relative rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
-                 {product.image && product.image.trim() !== "" ? (
-                   <Image src={product.image} alt={product.name} fill className="object-cover" />
-                 ) : (
-                   <div className="w-full h-full bg-gray-200" />
-                 )}
-               </div>
-               <div>
-                 <h3 className="font-bold text-lg sm:text-xl text-brand-dark leading-tight pr-4">{product.name}</h3>
-                 <p className="text-xs text-gray-500 line-clamp-1 mt-1">{product.description}</p>
-               </div>
+              <div className="w-16 h-16 relative rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
+                {product.image && product.image.trim() !== "" ? (
+                  <Image src={product.image} alt={product.name} fill className="object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gray-200" />
+                )}
+              </div>
+              <div>
+                <h3 className="font-bold text-lg sm:text-xl text-brand-dark leading-tight pr-4">{product.name}</h3>
+                <p className="text-xs text-gray-500 line-clamp-1 mt-1">{product.description}</p>
+              </div>
             </div>
             <button onClick={onClose} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 shrink-0">
               <X size={20} className="text-gray-600" />
@@ -82,9 +75,10 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
             <div key={size.label} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
               <div>
                 <span className="font-semibold text-sm sm:text-base text-brand-dark block">{size.label}</span>
-                <span className="text-brand-red font-bold text-sm sm:text-base">$ {size.price.toFixed(2)}</span>
+                {/* Divide by 100 for cents conversion if needed, or keep as is if stored as dollars */}
+                <span className="text-brand-red font-bold text-sm sm:text-base">$ {(size.price / 100).toFixed(2)}</span>
               </div>
-              <QuantityBtn 
+              <QuantityBtn
                 count={quantities[size.label] || 0}
                 onIncrease={() => handleIncrease(size.label)}
                 onDecrease={() => handleDecrease(size.label)}
@@ -95,7 +89,7 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
 
         {/* Footer */}
         <div className="p-6 pt-4 bg-white shrink-0 pb-8 sm:pb-6">
-          <button 
+          <button
             onClick={handleSaveBtn}
             className="w-full bg-brand-red text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-red-100 active:scale-95 transition-transform"
           >

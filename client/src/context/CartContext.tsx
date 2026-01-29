@@ -9,6 +9,7 @@ import {
 } from "react";
 import { api } from "@/lib/api";
 import { toast } from "react-hot-toast";
+import { AxiosError } from 'axios';
 
 // --- Types (Matching your Prisma Schema) ---
 type Variant = {
@@ -143,8 +144,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // For simplicity, let's refetch to ensure data consistency
       await fetchCart(tableId);
       toast.success("Added to cart!");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to add item");
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      toast.error(err.response?.data?.message || "Failed to add item");
     }
   };
 
@@ -165,7 +167,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
 
       await api.patch(`/cart/${cartItemId}`, { quantity: newQuantity });
-    } catch (error) {
+    } catch {
       toast.error("Failed to update cart");
       // Revert fetch on error
       if (tableId) fetchCart(tableId);
@@ -180,7 +182,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       await api.delete(`/cart/${cartItemId}`);
       toast.success("Item removed");
-    } catch (error) {
+    } catch {
       toast.error("Failed to remove item");
       if (tableId) fetchCart(tableId);
     }
@@ -199,9 +201,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Success: Clear local cart immediately
       setCart([]);
       toast.success("Order placed successfully!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Place Order Error:", error);
-      toast.error(error.response?.data?.message || "Failed to place order");
+      const err = error as AxiosError<{ message: string }>;
+      toast.error(err.response?.data?.message || "Failed to place order");
       throw error; // Re-throw to let UI handle loading states
     }
   };

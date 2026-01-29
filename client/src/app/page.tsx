@@ -13,7 +13,6 @@ import { useState, useEffect, Suspense } from "react";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 import QRHandler from "@/components/auth/QRHandler";
-import TableStatus from "@/components/other/TableStatus";
 
 export default function Home() {
   const [dietFilter, setDietFilter] = useState<"all" | "veg" | "non-veg">(
@@ -25,7 +24,7 @@ export default function Home() {
   const [isMenuLoading, setIsMenuLoading] = useState(true);
 
   // Global Cart State
-  const { cart, addToCart, updateQuantity, tableId, placeOrder } = useCart();
+  const { cart, addToCart, updateQuantity, placeOrder } = useCart();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -40,7 +39,7 @@ export default function Home() {
         const dbProducts = res.data.data.items;
 
         // Just add the fields missing from DB (image, qty)
-        const readyProducts = dbProducts.map((p: any) => ({
+        const readyProducts = dbProducts.map((p: Omit<Product, "image" | "qty">) => ({
           ...p,
           image: "/images/burgers.jpeg", // Default image until DB has them
           qty: 42, // Default qty for demo
@@ -136,9 +135,7 @@ export default function Home() {
       await placeOrder();
       // On success, go back to HOME view
       setCurrentView("HOME");
-    } catch (error) {
-      // Error is handled in context toast, stay on Cart view
-    }
+    } catch { }
   };
 
   // --- 2. Updated Filter Logic ---
@@ -232,52 +229,53 @@ export default function Home() {
 
                   {!isMenuLoading && filteredProducts.length > 0
                     ? filteredProducts.map((product) => (
-                        <ProductCard
-                          key={product.id}
-                          product={product}
-                          cartQty={getProductTotalQty(product.id)}
-                          onAddClick={() => handleCardAddClick(product)}
-                          onIncrease={() => increaseSingleItem(product)}
-                          onDecrease={() => decreaseSingleItem(product.id)}
-                        />
-                      ))
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        cartQty={getProductTotalQty(product.id)}
+                        onAddClick={() => handleCardAddClick(product)}
+                        onIncrease={() => increaseSingleItem(product)}
+                        onDecrease={() => decreaseSingleItem(product.id)}
+                      />
+                    ))
                     : !isMenuLoading && (
-                        <div className="py-10 text-center opacity-50">
-                          <p className="text-gray-500 font-medium">
-                            No items found
-                          </p>
-                          <button
-                            onClick={() => {
-                              setDietFilter("all");
-                              setSelectedCategory("all");
-                            }}
-                            className="mt-2 text-brand-red text-xs underline"
-                          >
-                            Clear Filters
-                          </button>
-                        </div>
-                      )}
+                      <div className="py-10 text-center opacity-50">
+                        <p className="text-gray-500 font-medium">
+                          No items found
+                        </p>
+                        <button
+                          onClick={() => {
+                            setDietFilter("all");
+                            setSelectedCategory("all");
+                          }}
+                          className="mt-2 text-brand-red text-xs underline"
+                        >
+                          Clear Filters
+                        </button>
+                      </div>
+                    )}
                 </div>
               </section>
             </div>
           </div>
 
           <ProductDialog
+            key={selectedProduct?.id ? `${selectedProduct.id}-${isDialogOpen}` : 'dialog-reset'}
             isOpen={isDialogOpen}
             product={selectedProduct}
             initialData={
               selectedProduct
                 ? cart
-                    .filter((i) => i.menuItem.id === selectedProduct.id)
-                    .reduce(
-                      (acc, item) => {
-                        // CHANGE: Use 'label' because Backend/Types now use 'label'
-                        if (item.variant)
-                          acc[item.variant.label] = item.quantity;
-                        return acc;
-                      },
-                      {} as Record<string, number>,
-                    )
+                  .filter((i) => i.menuItem.id === selectedProduct.id)
+                  .reduce(
+                    (acc, item) => {
+                      // CHANGE: Use 'label' because Backend/Types now use 'label'
+                      if (item.variant)
+                        acc[item.variant.label] = item.quantity;
+                      return acc;
+                    },
+                    {} as Record<string, number>,
+                  )
                 : {}
             }
             onClose={() => setIsDialogOpen(false)}

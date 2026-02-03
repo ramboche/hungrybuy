@@ -1,9 +1,11 @@
 import { Role } from "@prisma/client";
 import { Request } from "express";
 
+export interface AuthUser {
+  id: string;
+  role: Role;
+}
+
 export interface AuthenticatedRequest extends Request {
-  headers: Request["headers"] & {
-    "x-user-id"?: string;
-    "x-user-role"?: Role;
-  };
+  user?: AuthUser;
 }

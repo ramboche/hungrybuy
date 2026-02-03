@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
-import { attachUserMiddleware } from "./middlewares/auth.middleware";
+import { attachUserMiddleware } from "./middlewares/user.middleware";
 import authRoutes from "./routes/auth.route";
 import adminRoutes from "./routes/admin.route";
 import tableRoutes from "./routes/table.route";

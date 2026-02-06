@@ -6,6 +6,6 @@ export interface AuthUser {
   role: Role;
 }
 
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest {
   user?: AuthUser;
 }

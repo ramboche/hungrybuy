@@ -1,9 +1,9 @@
 import { NextFunction, Response } from "express";
-import { AuthenticatedRequest } from "../types/auth";
 import { JwtPayload, verifyToken } from "../utils/jwt";
+import { TypedRequest } from "../types/request";
 
 export function attachUserMiddleware(
-  req: AuthenticatedRequest,
+  req: TypedRequest,
   _: Response,
   next: NextFunction,
 ) {

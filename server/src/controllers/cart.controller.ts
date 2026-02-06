@@ -1,13 +1,21 @@
 import { Response } from "express";
-import { AuthenticatedRequest } from "../types/auth";
 import { prisma } from "../lib/prisma";
+import { TypedRequest } from "../types/request";
+import {
+  AddCartBody,
+  AddCartParams,
+  DeleteCartParams,
+  GetCartParams,
+  UpdateCartBody,
+  UpdateCartParams,
+} from "../validation/cart.schema";
 
-export async function addToCart(req: AuthenticatedRequest, res: Response) {
+export async function addToCart(
+  req: TypedRequest<AddCartParams, AddCartBody, {}>,
+  res: Response,
+) {
   try {
     const { tableId } = req.params;
-    if (!tableId || Array.isArray(tableId)) {
-      return res.status(400).json({ message: "Invalid table ID" });
-    }
 
     const table = await prisma.table.findUnique({ where: { id: tableId } });
     if (!table) {
@@ -15,9 +23,6 @@ export async function addToCart(req: AuthenticatedRequest, res: Response) {
     }
 
     const { menuItemId, variantId, quantity } = req.body;
-    if (!menuItemId || !Number.isInteger(quantity) || quantity < 0) {
-      return res.status(400).json({ message: "Invalid input" });
-    }
 
     const menuItem = await prisma.menuItem.findUnique({
       where: { id: menuItemId },
@@ -53,13 +58,11 @@ export async function addToCart(req: AuthenticatedRequest, res: Response) {
       return res.status(400).json({ message: "Cannot add item to cart" });
     }
 
-    const cart = await prisma.cartItem.findUnique({
+    const cart = await prisma.cartItem.findFirst({
       where: {
-        tableId_menuItemId_variantId: {
-          tableId,
-          menuItemId,
-          variantId: variantId ?? null,
-        },
+        tableId,
+        menuItemId,
+        variantId: variantId ?? null,
       },
     });
 
@@ -92,12 +95,12 @@ export async function addToCart(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function getCart(req: AuthenticatedRequest, res: Response) {
+export async function getCart(
+  req: TypedRequest<GetCartParams, {}, {}>,
+  res: Response,
+) {
   try {
     const { tableId } = req.params;
-    if (!tableId || Array.isArray(tableId)) {
-      return res.status(400).json({ message: "Invalid table ID" });
-    }
 
     const table = await prisma.table.findUnique({ where: { id: tableId } });
     if (!table) {
@@ -121,17 +124,13 @@ export async function getCart(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function updateCart(req: AuthenticatedRequest, res: Response) {
+export async function updateCart(
+  req: TypedRequest<UpdateCartParams, UpdateCartBody, {}>,
+  res: Response,
+) {
   try {
     const { cartId } = req.params;
-    if (!cartId || Array.isArray(cartId)) {
-      return res.status(400).json({ message: "Invalid table ID" });
-    }
-
     const { quantity } = req.body;
-    if (!Number.isInteger(quantity) || quantity < 0) {
-      return res.status(400).json({ message: "Invalid quantity" });
-    }
 
     const cart = await prisma.cartItem.findUnique({
       where: { id: cartId },
@@ -165,12 +164,12 @@ export async function updateCart(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function deleteCartItem(req: AuthenticatedRequest, res: Response) {
+export async function deleteCartItem(
+  req: TypedRequest<DeleteCartParams, {}, {}>,
+  res: Response,
+) {
   try {
     const { cartId } = req.params;
-    if (!cartId || Array.isArray(cartId)) {
-      return res.status(400).json({ message: "Invalid cart ID" });
-    }
 
     const cart = await prisma.cartItem.findUnique({
       where: { id: cartId },

@@ -1,10 +1,32 @@
 import { Router } from "express";
-import { getAllCategories, createCategory, deleteCategory } from "../controllers/category.controller";
+import {
+  getAllCategories,
+  createCategory,
+  deleteCategory,
+} from "../controllers/category.controller";
+import { requireRole } from "../middlewares/role.middleware";
+import { validate } from "../middlewares/validate.middleware";
+import {
+  CreateCategoryBody,
+  DeleteCategoryParams,
+} from "../validation/category.schema";
 
 const router = Router();
 
-router.get("/", getAllCategories);
-router.post("/create", createCategory);
-router.delete("/:id", deleteCategory)
+router.get("/", requireRole(["ADMIN", "SHOP", "USER"]), getAllCategories);
+
+router.post(
+  "/create",
+  requireRole(["ADMIN"]),
+  validate(CreateCategoryBody),
+  createCategory,
+);
+
+router.delete(
+  "/:id",
+  requireRole(["ADMIN", "SHOP"]),
+  validate(DeleteCategoryParams, "params"),
+  deleteCategory,
+);
 
 export default router;

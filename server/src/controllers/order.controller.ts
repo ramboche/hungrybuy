@@ -1,13 +1,20 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../types/auth";
 import { prisma } from "../lib/prisma";
+import { TypedRequest } from "../types/request";
+import {
+  ActiveOrdersParams,
+  CreateOrderParams,
+  UpdateOrderParams,
+  UpdateOrderStatusBody,
+} from "../validation/order.schema";
 
-export async function createOrder(req: AuthenticatedRequest, res: Response) {
+export async function createOrder(
+  req: TypedRequest<CreateOrderParams, {}, {}>,
+  res: Response,
+) {
   try {
     const { tableId } = req.params;
-    if (!tableId || Array.isArray(tableId)) {
-      return res.status(400).json({ message: "Invalid table ID" });
-    }
 
     const table = await prisma.table.findUnique({ where: { id: tableId } });
     if (!table) {
@@ -59,18 +66,16 @@ export async function createOrder(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function getActiveOrders(
-  req: AuthenticatedRequest,
+  req: TypedRequest<ActiveOrdersParams, {}, {}>,
   res: Response,
 ) {
   try {
     const { tableId } = req.params;
-    if (!tableId || Array.isArray(tableId)) {
-      return res.status(400).json({ message: "Invalid table ID" });
-    }
 
     const table = await prisma.table.findUnique({
       where: { id: tableId },
     });
+
     if (!table) {
       return res.status(404).json({ message: "Table not found" });
     }
@@ -100,13 +105,8 @@ export async function getActiveOrders(
   }
 }
 
-export async function getAllOrders(req: AuthenticatedRequest, res: Response) {
+export async function getAllOrders(_: TypedRequest, res: Response) {
   try {
-    const userRole = req.headers["x-user-role"];
-    if (userRole !== "ADMIN" && userRole !== "SHOP") {
-      return res.status(401).json({ message: "Forbidden" });
-    }
-
     const orders = await prisma.order.findMany({
       include: {
         items: {
@@ -128,24 +128,12 @@ export async function getAllOrders(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function updateOrderStatus(
-  req: AuthenticatedRequest,
+  req: TypedRequest<UpdateOrderParams, UpdateOrderStatusBody, {}>,
   res: Response,
 ) {
   try {
-    const userRole = req.headers["x-user-role"];
-    if (userRole !== "ADMIN" && userRole !== "SHOP") {
-      return res.status(401).json({ message: "Forbidden" });
-    }
-
     const { orderId } = req.params;
-    if (!orderId || Array.isArray(orderId)) {
-      return res.status(400).json({ message: "Invalid order ID" });
-    }
-
     const { status } = req.body;
-    if (!status) {
-      return res.status(400).json({ message: "Status is required" });
-    }
 
     let isActive = true;
     if (status === "PAID") {

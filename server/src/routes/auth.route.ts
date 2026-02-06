@@ -3,16 +3,16 @@ import { registerUser, loginUser } from "../controllers/auth.controller";
 import { sendOtp } from "../controllers/otp.controller";
 import { validate } from "../middlewares/validate.middleware";
 import {
-  LoginUserSchema,
-  OtpRequestSchema,
-  RegisterUserSchema,
+  LoginUserBody,
+  OtpRequestBody,
+  RegisterUserBody,
 } from "../validation/auth.schema";
 
 const router = Router();
 
-router.post("/register", validate(RegisterUserSchema), registerUser);
-router.post("/login", validate(LoginUserSchema), loginUser);
+router.post("/register", validate(RegisterUserBody), registerUser);
+router.post("/login", validate(LoginUserBody), loginUser);
 
-router.post("/send-otp", validate(OtpRequestSchema), sendOtp);
+router.post("/send-otp", validate(OtpRequestBody), sendOtp);
 
 export default router;

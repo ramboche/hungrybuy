@@ -1,18 +1,17 @@
 import { Response } from "express";
 import { prisma } from "../lib/prisma";
-import { AuthenticatedRequest } from "../types/auth";
+import { TypedRequest } from "../types/request";
+import {
+  CreateCategoryBody,
+  DeleteCategoryParams,
+} from "../validation/category.schema";
 
-export async function createCategory(req: AuthenticatedRequest, res: Response) {
+export async function createCategory(
+  req: TypedRequest<{}, CreateCategoryBody, {}>,
+  res: Response,
+) {
   try {
-    const userRole = req.headers["x-user-role"];
-    if (userRole !== "ADMIN") {
-      return res.status(401).json({ message: "Forbidden" });
-    }
-
     const { name } = req.body;
-    if (!name.trim()) {
-      return res.status(400).json({ message: "Name is required" });
-    }
 
     const category = await prisma.category.findUnique({ where: { name } });
     if (category) {
@@ -35,10 +34,7 @@ export async function createCategory(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function getAllCategories(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
+export async function getAllCategories(_: TypedRequest, res: Response) {
   try {
     const categories = await prisma.category.findMany({
       orderBy: { name: "asc" },
@@ -53,17 +49,12 @@ export async function getAllCategories(
   }
 }
 
-export async function deleteCategory(req: AuthenticatedRequest, res: Response) {
+export async function deleteCategory(
+  req: TypedRequest<DeleteCategoryParams, {}, {}>,
+  res: Response,
+) {
   try {
-    const userRole = req.headers["x-user-role"];
-    if (userRole !== "ADMIN" && userRole !== "SHOP") {
-      return res.status(401).json({ message: "Forbidden" });
-    }
-
     const { id } = req.params;
-    if (!id || Array.isArray(id)) {
-      return res.status(400).json({ message: "Invalid category ID" });
-    }
 
     const hasItem = await prisma.menuItem.findFirst({
       where: {

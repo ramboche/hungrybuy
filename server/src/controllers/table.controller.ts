@@ -1,20 +1,21 @@
 import { Response } from "express";
 import QRCode from "qrcode";
-import { AuthenticatedRequest } from "../types/auth";
 import { prisma } from "../lib/prisma";
 import { generateQrToken } from "../utils/qr";
+import { TypedRequest } from "../types/request";
+import {
+  CreateTableBody,
+  DeleteTableParams,
+  GenerateTableQrParams,
+  ResolveQrParams,
+} from "../validation/table.schema";
 
-export async function createTable(req: AuthenticatedRequest, res: Response) {
+export async function createTable(
+  req: TypedRequest<{}, CreateTableBody, {}>,
+  res: Response,
+) {
   try {
-    const userRole = req.headers["x-user-role"];
-    if (userRole !== "ADMIN" && userRole !== "SHOP") {
-      return res.status(401).json({ message: "Forbidden" });
-    }
-
     const { number } = req.body;
-    if (!number || number <= 0) {
-      return res.status(400).json({ message: "Invalid table number" });
-    }
 
     const table = await prisma.table.findUnique({ where: { number } });
     if (table) {
@@ -44,13 +45,8 @@ export async function createTable(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function getAllTables(req: AuthenticatedRequest, res: Response) {
+export async function getAllTables(_: TypedRequest, res: Response) {
   try {
-    const userRole = req.headers["x-user-role"];
-    if (userRole !== "ADMIN" && userRole !== "SHOP") {
-      return res.status(401).json({ message: "Forbidden" });
-    }
-
     const tables = await prisma.table.findMany({ orderBy: { number: "asc" } });
     return res
       .status(200)
@@ -61,13 +57,12 @@ export async function getAllTables(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function resolveQr(req: AuthenticatedRequest, res: Response) {
+export async function resolveQr(
+  req: TypedRequest<ResolveQrParams, {}, {}>,
+  res: Response,
+) {
   try {
     const { qrToken } = req.params;
-
-    if (!qrToken || Array.isArray(qrToken)) {
-      return res.status(400).json({ message: "Invalid QR token" });
-    }
 
     const table = await prisma.table.findUnique({ where: { qrToken } });
     if (!table) {
@@ -83,17 +78,12 @@ export async function resolveQr(req: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function deleteTable(req: AuthenticatedRequest, res: Response) {
+export async function deleteTable(
+  req: TypedRequest<DeleteTableParams, {}, {}>,
+  res: Response,
+) {
   try {
-    const userRole = req.headers["x-user-role"];
-    if (userRole !== "ADMIN") {
-      return res.status(401).json({ message: "Forbidden" });
-    }
-
     const { id } = req.params;
-    if (!id || Array.isArray(id)) {
-      return res.status(400).json({ message: "Invalid table ID" });
-    }
 
     const table = await prisma.table.findUnique({ where: { id } });
     if (!table) {
@@ -109,19 +99,11 @@ export async function deleteTable(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function generateTableQr(
-  req: AuthenticatedRequest,
+  req: TypedRequest<GenerateTableQrParams, {}, {}>,
   res: Response,
 ) {
   try {
-    const userRole = req.headers["x-user-role"];
-    if (userRole !== "ADMIN" && userRole !== "SHOP") {
-      return res.status(401).json({ message: "Forbidden" });
-    }
-
     const { id } = req.params;
-    if (!id || Array.isArray(id)) {
-      return res.status(400).json({ message: "Invalid table ID" });
-    }
 
     const table = await prisma.table.findUnique({ where: { id } });
     if (!table) {

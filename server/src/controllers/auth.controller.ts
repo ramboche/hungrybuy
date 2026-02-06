@@ -2,8 +2,13 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { verifyOtp } from "../utils/otpStore";
 import { signJwt } from "../utils/jwt";
+import { TypedRequest } from "../types/request";
+import { LoginUserBody, RegisterUserBody } from "../validation/auth.schema";
 
-export async function registerUser(req: Request, res: Response) {
+export async function registerUser(
+  req: TypedRequest<{}, RegisterUserBody, {}>,
+  res: Response,
+) {
   try {
     const { name, phone, otp } = req.body;
 
@@ -44,7 +49,10 @@ export async function registerUser(req: Request, res: Response) {
   }
 }
 
-export async function loginUser(req: Request, res: Response) {
+export async function loginUser(
+  req: TypedRequest<{}, LoginUserBody, {}>,
+  res: Response,
+) {
   try {
     const { phone, otp } = req.body;
 

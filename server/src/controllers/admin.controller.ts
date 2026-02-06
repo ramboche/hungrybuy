@@ -1,10 +1,14 @@
-import { Request, Response } from "express";
-import { AuthenticatedRequest } from "../types/auth";
+import { Response } from "express";
 import { prisma } from "../lib/prisma";
 import { hashPassword, verifyPassword } from "../utils/hash";
 import { signJwt } from "../utils/jwt";
+import { TypedRequest } from "../types/request";
+import { AdminLoginBody, CreateShopBody } from "../validation/auth.schema";
 
-export async function adminLogin(req: Request, res: Response) {
+export async function adminLogin(
+  req: TypedRequest<{}, AdminLoginBody, {}>,
+  res: Response,
+) {
   try {
     const { email, password } = req.body;
 
@@ -35,7 +39,7 @@ export async function adminLogin(req: Request, res: Response) {
   }
 }
 
-export async function getAllShops(_: AuthenticatedRequest, res: Response) {
+export async function getAllShops(_: TypedRequest, res: Response) {
   try {
     const shops = await prisma.user.findMany({
       where: {
@@ -59,7 +63,10 @@ export async function getAllShops(_: AuthenticatedRequest, res: Response) {
   }
 }
 
-export async function createShop(req: AuthenticatedRequest, res: Response) {
+export async function createShop(
+  req: TypedRequest<{}, CreateShopBody, {}>,
+  res: Response,
+) {
   try {
     const { name, email, password } = req.body;
 

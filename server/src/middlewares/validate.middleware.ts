@@ -16,7 +16,12 @@ export function validate<T>(
       });
     }
 
-    req[property] = result.data;
+    if (property === "query") {
+      Object.assign(req.query, result.data);
+    } else {
+      (req as any)[property] = result.data;
+    }
+
     next();
   };
 }

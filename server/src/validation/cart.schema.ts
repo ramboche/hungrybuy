@@ -15,7 +15,7 @@ export type AddCartParams = z.infer<typeof AddCartParams>;
 export const AddCartBody = z.object({
   menuItemId: z.uuidv4(),
   variantId: z.uuidv4().optional(),
-  quantity: z.number().int().min(0),
+  quantity: z.coerce.number().int().min(0),
 });
 
 export type AddCartBody = z.infer<typeof AddCartBody>;
@@ -27,7 +27,7 @@ export const UpdateCartParams = z.object({
 export type UpdateCartParams = z.infer<typeof UpdateCartParams>;
 
 export const UpdateCartBody = z.object({
-  quantity: z.number().int().min(1),
+  quantity: z.coerce.number().int().min(1),
 });
 
 export type UpdateCartBody = z.infer<typeof UpdateCartBody>;

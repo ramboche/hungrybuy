@@ -3,7 +3,6 @@ import { AuthenticatedRequest } from "./auth";
 
 export interface TableContext {
   tableId: string;
-  sessionId: string;
 }
 
 export type TypedRequest<

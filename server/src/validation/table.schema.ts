@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const CreateTableBody = z.object({
-  number: z.number().int().min(1),
+  number: z.coerce.number().int().min(1),
 });
 
 export type CreateTableBody = z.infer<typeof CreateTableBody>;

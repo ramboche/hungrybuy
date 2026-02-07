@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/lib/api';
+import { AxiosError } from 'axios';
 import { Order, OrderStatus } from '@/lib/types';
 
 interface OrderState {
@@ -23,8 +24,9 @@ export const fetchOrders = createAsyncThunk(
       // Matches router.get("/all", getAllOrders);
       const response = await api.get('/order/all');
       return response.data.data.orders; 
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch orders');
     }
   }
 );
@@ -36,8 +38,9 @@ export const updateOrderStatus = createAsyncThunk(
       // Matches router.patch("/:orderId", updateOrderStatus);
       const response = await api.patch(`/order/${orderId}`, { status });
       return response.data.data.order; 
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update status');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to update status');
     }
   }
 );

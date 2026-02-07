@@ -9,8 +9,10 @@ import {
 } from "react";
 import { api } from "@/lib/api";
 import { toast } from "react-hot-toast";
+import { AxiosError } from 'axios';
 
-// --- Types (Matching your Prisma Schema) ---
+// Define Types
+
 type Variant = {
   id: string;
   label: string;
@@ -23,7 +25,7 @@ type MenuItem = {
   price: number | null;
   isAvailable: boolean;
   categoryId: string;
-  variants?: Variant[]; // Optional, in case you include them
+  variants?: Variant[];
 };
 
 type CartItem = {
@@ -39,7 +41,7 @@ type CartContextType = {
   totalAmount: number;
   tableId: string | null;
   tableNo: number;
-  setTableId: (id: string) => void;
+  setTable: ({ id, no }: { id: string; no: number }) => void;
   resolveTableFromToken: (token: string) => Promise<void>;
   addToCart: (
     menuItemId: string,
@@ -61,23 +63,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // 1. Fetch Cart when tableId changes
   useEffect(() => {
-    const storedTableId = localStorage.getItem("table_id");
-    if (storedTableId) {
-      setTableIdState(storedTableId);
-      fetchCart(storedTableId);
+    const storedTable = localStorage.getItem("table");
+    if (storedTable) {
+      const parsedTable = JSON.parse(storedTable);
+      setTableIdState(parsedTable.id);
+      setTableNo(parsedTable.no);
+      fetchCart(parsedTable.id);
     }
   }, []);
 
-  const setTableId = (id: string) => {
+
+  const setTable = ({ id, no }: { id: string; no: number }) => {
     setTableIdState(id);
-    localStorage.setItem("table_id", id);
+    setTableNo(no);
+    localStorage.setItem("table", JSON.stringify({id, no}));
     fetchCart(id);
   };
 
   const resolveTableFromToken = async (token: string) => {
     setIsLoading(true);
     try {
-      // Matches Backend: router.get("/qr/:qrToken", resolveQr);
       const res = await api.get(`/table/qr/${token}`);
 
       const resolvedTable = res.data.data.table;
@@ -86,8 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const tableNo = resolvedTable.number;
 
       if (tableId) {
-        setTableId(tableId);
-        setTableNo(tableNo);
+        setTable({ id: tableId, no: tableNo });
         toast.success("Connected to table!");
       }
     } catch (error) {
@@ -122,8 +126,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Frontend Logic: Check if item already exists to increment quantity
-      // (Because backend replaces quantity instead of adding)
       const existingItem = cart.find(
         (item) =>
           item.menuItem.id === menuItemId && item.variant?.id === variantId,
@@ -139,12 +141,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         quantity: finalQuantity,
       });
 
-      // Optimistic Update or Refetch
-      // For simplicity, let's refetch to ensure data consistency
       await fetchCart(tableId);
       toast.success("Added to cart!");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to add item");
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      toast.error(err.response?.data?.message || "Failed to add item");
     }
   };
 
@@ -152,12 +153,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateQuantity = async (cartItemId: string, newQuantity: number) => {
     try {
       if (newQuantity <= 0) {
-        // If 0, delete it
         await removeFromCart(cartItemId);
         return;
       }
 
-      // Optimistic UI Update (Make it feel fast)
+      // Optimistic UI Update
       setCart((prev) =>
         prev.map((item) =>
           item.id === cartItemId ? { ...item, quantity: newQuantity } : item,
@@ -165,7 +165,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       );
 
       await api.patch(`/cart/${cartItemId}`, { quantity: newQuantity });
-    } catch (error) {
+    } catch {
       toast.error("Failed to update cart");
       // Revert fetch on error
       if (tableId) fetchCart(tableId);
@@ -180,7 +180,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       await api.delete(`/cart/${cartItemId}`);
       toast.success("Item removed");
-    } catch (error) {
+    } catch {
       toast.error("Failed to remove item");
       if (tableId) fetchCart(tableId);
     }
@@ -193,16 +193,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // Calls the order routes: router.post("/create/:tableId", createOrder);
       await api.post(`/order/create/${tableId}`);
 
       // Success: Clear local cart immediately
       setCart([]);
       toast.success("Order placed successfully!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Place Order Error:", error);
-      toast.error(error.response?.data?.message || "Failed to place order");
-      throw error; // Re-throw to let UI handle loading states
+      const err = error as AxiosError<{ message: string }>;
+      toast.error(err.response?.data?.message || "Failed to place order");
+      throw error; 
     }
   };
 
@@ -220,7 +220,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         totalAmount,
         tableId,
         tableNo,
-        setTableId,
+        setTable,
         resolveTableFromToken,
         addToCart,
         updateQuantity,

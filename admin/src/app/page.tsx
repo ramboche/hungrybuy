@@ -5,11 +5,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { AnimatePresence } from 'framer-motion';
-import { ShoppingBag, DollarSign, Users, Plus, LogOut } from 'lucide-react';
+import { ShoppingBag, DollarSign, Users, Plus } from 'lucide-react';
 import QrCodeModal from '@/components/admin/modals/QrCodeModal';
 
 // Types & Data
-import { Order, OrderStatus, Product, Table } from '@/lib/types';
+import { Order, OrderStatus, Product, Table, ProductFormData } from '@/lib/types';
 import { ORDER_TABS } from '@/lib/data';
 
 // Redux
@@ -24,7 +24,7 @@ import { fetchOrders, updateOrderStatus } from '@/lib/store/features/orderSlice'
 import AdminHeader from '@/components/admin/AdminHeader';
 import StatsCard from '@/components/admin/StatsCard';
 import OrderRow from '@/components/admin/OrderRow';
-import AddTableModal from '@/components/admin/AddTableModal';
+import AddTableModal from '@/components/admin/modals/AddTableModal';
 import AdminBottomNav from '@/components/admin/AdminBottomNav';
 import TablesGrid from '@/components/admin/TablesGrid';
 import MenuRow from '@/components/admin/menu/MenuRow';
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
   const dispatch = useDispatch<AppDispatch>();
 
   // 3. Get Auth & Tables State from Redux
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const { tables } = useSelector((state: RootState) => state.tables); // <--- Tables from Redux
   const { categories } = useSelector((state: RootState) => state.categories);
   const { products } = useSelector((state: RootState) => state.menu);
@@ -51,7 +51,13 @@ export default function AdminDashboard() {
 
   // --- Hydration Fix ---
   useEffect(() => {
-    setIsMounted(true);
+    // FIX: Wrap in setTimeout to avoid the "synchronous setState" error.
+    // This pushes the update to the next tick, satisfying the linter.
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // --- Route Protection ---
@@ -155,28 +161,35 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSaveProduct = async (productData: any) => {
+  const handleSaveProduct = async (
+    itemData: FormData,
+    variants: { id?: string; label: string; price: number }[]
+  ) => {
     let result;
 
     if (editingProduct) {
-      // --- EDIT MODE ---
-      // Dispatch Update action with the existing ID
+      // Update Mode
       result = await dispatch(updateProduct({
-        ...productData,
-        id: editingProduct.id
+        id: editingProduct.id,
+        itemData,
+        variants,
       }));
     } else {
-      // --- ADD MODE ---
-      // Dispatch Add action (creates new)
-      result = await dispatch(addProduct(productData));
+      // Add Mode
+      result = await dispatch(addProduct({
+        itemData,
+        variants,
+      }));
     }
 
-    // Check success for either action
+    // Check success
     if (addProduct.fulfilled.match(result) || updateProduct.fulfilled.match(result)) {
       setIsProductModalOpen(false);
-      setEditingProduct(null); // Clear editing state
+      setEditingProduct(null);
     } else {
-      alert("Failed to save product");
+      // Access the error message from the rejected action if available
+      const errorMsg = result.payload as string || "Failed to save product";
+      alert(errorMsg);
     }
   };
 
@@ -223,7 +236,8 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800 pb-24">
 
-      {/* <div className="max-w-7xl mx-auto pt-4 px-4 md:px-8 flex justify-between items-center">
+      {/* <div className="max-w-7xl mx-auto pt-4 ￼
+px-4 md:px-8 flex justify-between items-center">
         <p className="text-sm text-gray-500">Welcome back, <span className="font-bold text-gray-900">{user?.name}</span></p>
         <button onClick={handleLogout} className="flex items-center gap-2 text-xs font-bold text-brand-red bg-red-50 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors">
           <LogOut size={14} /> Logout

@@ -33,13 +33,13 @@ export default function CartPage({
     try {
       await onPlaceOrder();
       // On success, parent (Home) usually switches view, so we don't need to unset loading
-    } catch (error) {
+    } catch {
       setIsPlacing(false); // Reset on error so they can try again
     }
   };
 
   // Helper: Lookup image from constants because DB doesn't have images yet
-  const getProductImage = (name: string) => {
+  const getProductImage = () => {
     // const found = PRODUCTS.find(p => p.name.toLowerCase() === name.toLowerCase());
     return '/images/burgers.jpeg';
   };
@@ -94,7 +94,7 @@ export default function CartPage({
                 {/* Image (Local Lookup) */}
                 <div className="relative w-24 h-24 shrink-0 bg-gray-100 rounded-2xl overflow-hidden">
                   <Image
-                    src={getProductImage(item.menuItem.name)}
+                    src={getProductImage()}
                     alt={item.menuItem.name}
                     fill
                     className="object-cover"

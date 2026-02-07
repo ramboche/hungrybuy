@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { ArrowLeft, Clock, Printer, CheckCircle } from 'lucide-react';
 import { Order } from '@/lib/types';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface Props {
   order: Order;
@@ -83,13 +84,16 @@ export default function OrderDetailsView({ order, tableNumber, onBack, onComplet
           {order.items.map((item) => (
             <div key={item.id} className="flex gap-4 p-3 rounded-2xl border border-gray-100 bg-white shadow-sm">
               <div className="relative w-16 h-16 shrink-0 bg-gray-100 rounded-xl overflow-hidden">
-                {/* Fallback Image */}
-                <img
+                <Image
                   src={item.menuItem?.image || '/images/burger.jpg'}
-                  alt={item.menuItem?.name}
-                  className="w-full h-full object-cover"
+                  alt={item.menuItem?.name || "Order Item"}
+                  fill
+                  className="object-cover"
+                  sizes="64px"
                 />
-                <span className="absolute -top-2 -right-2 w-5 h-5 bg-brand-red text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
+
+                {/* Badge needs z-10 to stay on top of the image */}
+                <span className="absolute z-10 right-0 w-5 h-5 bg-brand-red text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
                   {item.quantity}
                 </span>
               </div>

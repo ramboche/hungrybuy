@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/lib/api';
 import { Category } from '@/lib/types';
+import { AxiosError } from 'axios';
 
 interface CategoryState {
   categories: Category[];
@@ -22,8 +23,10 @@ export const fetchCategories = createAsyncThunk(
     try {
       const response = await api.get('/categories');
       return response.data.data.categories; // { data: { categories: [] } }
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch categories');
+    } catch (error) {
+
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch categories');
     }
   }
 );
@@ -34,8 +37,9 @@ export const addCategory = createAsyncThunk(
     try {
       const response = await api.post('/categories/create', { name });
       return response.data.data.category; // { data: { category: {...} } }
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to add category');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to add category');
     }
   }
 );
@@ -46,8 +50,9 @@ export const deleteCategory = createAsyncThunk(
     try {
       await api.delete(`/categories/${id}`);
       return id;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete category');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to delete category');
     }
   }
 );

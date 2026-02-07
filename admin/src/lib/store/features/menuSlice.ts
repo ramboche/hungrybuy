@@ -1,6 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/lib/api';
 import { Product, MenuVariant } from '@/lib/types';
+import { AxiosError } from 'axios';
+
+interface AddProductThunkPayload {
+    itemData: FormData; // Contains name, price, image, etc.
+    variants: { label: string; price: number }[];
+}
+
+interface UpdateProductThunkPayload {
+    id: string;
+    itemData: FormData;
+    variants: { id?: string; label: string; price: number }[];
+}
 
 interface MenuState {
     products: Product[];
@@ -19,10 +31,10 @@ const initialState: MenuState = {
 interface CreateProductPayload {
     name: string;
     description?: string;
-    price: number; // in cents
+    price?: number; // in cents
     categoryId: string;
     foodType: 'VEG' | 'NON_VEG';
-    variants: { id?: string; label: string; price: number }[]; 
+    variants: { id?: string; label: string; price: number }[];
 }
 
 interface UpdateProductPayload extends CreateProductPayload {
@@ -38,31 +50,27 @@ export const fetchProducts = createAsyncThunk(
         try {
             const response = await api.get('/menu');
             return response.data.data.items;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch menu');
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>;
+            return rejectWithValue(err.response?.data?.message || 'Failed to fetch menu');
         }
     }
 );
 
 export const addProduct = createAsyncThunk(
     'menu/add',
-    async (payload: CreateProductPayload, { rejectWithValue, dispatch }) => {
+    async ({ itemData, variants }: AddProductThunkPayload, { rejectWithValue, dispatch }) => {
         try {
-            // 1. Create the Main Item
-            const itemResponse = await api.post('/menu/create', {
-                name: payload.name,
-                description: payload.description,
-                price: payload.price,
-                foodType: payload.foodType,
-                categoryId: payload.categoryId
+            // 1. Create Main Item (Sends Multipart/Form-Data)
+            const itemResponse = await api.post('/menu/create', itemData, {
+                headers: { 'Content-Type': 'multipart/form-data' }, // Crucial for Multer
             });
 
             const newItem = itemResponse.data.data.item;
 
-            // 2. Create Variants
-            if (payload.variants.length > 0) {
-                // Use Promise.all for faster parallel creation
-                await Promise.all(payload.variants.map(variant => 
+            // 2. Create Variants (Sends JSON - backend unchanged)
+            if (variants.length > 0) {
+                await Promise.all(variants.map(variant =>
                     api.post(`/menu/${newItem.id}/variants`, {
                         label: variant.label,
                         price: variant.price
@@ -73,69 +81,48 @@ export const addProduct = createAsyncThunk(
             dispatch(fetchProducts());
             return newItem;
 
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to add product');
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>;
+            return rejectWithValue(err.response?.data?.message || 'Failed to add product');
         }
     }
 );
 
+
 export const updateProduct = createAsyncThunk(
     'menu/update',
-    async (payload: UpdateProductPayload, { rejectWithValue, dispatch }) => {
+    async ({ id, itemData, variants }: UpdateProductThunkPayload, { rejectWithValue, dispatch }) => {
         try {
-            // 1. Update Main Item Fields
-            await api.patch(`/menu/${payload.id}`, {
-                name: payload.name,
-                description: payload.description,
-                price: payload.price,
-                foodType: payload.foodType,
-                categoryId: payload.categoryId,
-                isAvailable: payload.isAvailable
+            // 1. Update Main Item (Sends Multipart/Form-Data)
+            await api.patch(`/menu/${id}`, itemData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            // --- 2. SYNC VARIANTS (The Logic You Were Missing) ---
-            
-            // A. Fetch current variants from DB to know what exists
-            const existingVarsResponse = await api.get(`/menu/${payload.id}/variants`);
-            const dbVariants: any[] = existingVarsResponse.data.data.variants || [];
+            // --- 2. SYNC VARIANTS (Logic preserved) ---
+
+            // A. Fetch current variants
+            const existingVarsResponse = await api.get(`/menu/${id}/variants`);
+            const dbVariants: MenuVariant[] = existingVarsResponse.data.data.variants || [];
 
             // B. Identify Changes
-            const payloadVariantIds = payload.variants.map(v => v.id).filter(Boolean);
+            const payloadVariantIds = variants.map(v => v.id).filter(Boolean);
 
-            // To Delete: Variants in DB that are NOT in the new payload
             const toDelete = dbVariants.filter(v => !payloadVariantIds.includes(v.id));
+            const toAdd = variants.filter(v => !v.id);
+            const toUpdate = variants.filter(v => v.id);
 
-            // To Add: Variants in payload that have NO ID
-            const toAdd = payload.variants.filter(v => !v.id);
-
-            // To Update: Variants in payload that HAVE an ID
-            const toUpdate = payload.variants.filter(v => v.id);
-
-            // C. Execute API Calls (Parallel)
+            // C. Execute API Calls
             await Promise.all([
-                // Delete removed variants
-                ...toDelete.map(v => api.delete(`/menu/${payload.id}/variants/${v.id}`)),
-                
-                // Add new variants
-                ...toAdd.map(v => api.post(`/menu/${payload.id}/variants`, { 
-                    label: v.label, 
-                    price: v.price 
-                })),
-                
-                // Update modified variants
-                ...toUpdate.map(v => api.patch(`/menu/${payload.id}/variants/${v.id}`, { 
-                    label: v.label, 
-                    price: v.price 
-                }))
+                ...toDelete.map(v => api.delete(`/menu/${id}/variants/${v.id}`)),
+                ...toAdd.map(v => api.post(`/menu/${id}/variants`, { label: v.label, price: v.price })),
+                ...toUpdate.map(v => api.patch(`/menu/${id}/variants/${v.id}`, { label: v.label, price: v.price }))
             ]);
 
-            // 3. Refresh State
-            // Because we did complex nested updates, it's safest to re-fetch the fresh tree
             dispatch(fetchProducts());
-
-            return payload; // Return payload to satisfy TS, though fetchProducts handles the state update
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to update product');
+            return id;
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>;
+            return rejectWithValue(err.response?.data?.message || 'Failed to update product');
         }
     }
 );
@@ -146,8 +133,9 @@ export const deleteProduct = createAsyncThunk(
         try {
             await api.delete(`/menu/${id}`);
             return id;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to delete product');
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>;
+            return rejectWithValue(err.response?.data?.message || 'Failed to delete product');
         }
     }
 );
@@ -163,9 +151,9 @@ const menuSlice = createSlice({
             .addCase(fetchProducts.pending, (state) => { state.isLoading = true; })
             .addCase(fetchProducts.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.products = action.payload.map((p: any) => ({
+                state.products = action.payload.map((p: Product) => ({
                     ...p,
-                    image: '/burgers.jpeg'
+                    // image: '/burgers.jpeg'
                 }));
             })
             .addCase(deleteProduct.fulfilled, (state, action) => {
@@ -173,8 +161,8 @@ const menuSlice = createSlice({
             })
             // Update is mostly handled by fetchProducts dispatch now, 
             // but we can leave this for optimistic UI updates if needed later.
-            .addCase(updateProduct.fulfilled, (state, action) => {
-                 // The fetchProducts dispatch inside the thunk will handle the actual data refresh
+            .addCase(updateProduct.fulfilled, () => {
+                // The fetchProducts dispatch inside the thunk will handle the actual data refresh
             });
     },
 });

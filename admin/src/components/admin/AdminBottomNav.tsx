@@ -1,10 +1,18 @@
 'use client';
 
 import { ClipboardList, LayoutGrid, UtensilsCrossed } from 'lucide-react';
+import { ReactNode } from 'react';
 
 interface Props {
   activeTab: 'ORDERS' | 'TABLES' | 'MENU'; // <--- Added MENU
   onTabChange: (tab: 'ORDERS' | 'TABLES' | 'MENU') => void;
+}
+
+interface NavBtnProps {
+  isActive: boolean;
+  onClick: () => void;
+  icon: ReactNode; 
+  label: string;
 }
 
 export default function AdminBottomNav({ activeTab, onTabChange }: Props) {
@@ -36,7 +44,7 @@ export default function AdminBottomNav({ activeTab, onTabChange }: Props) {
   );
 }
 
-function NavBtn({ isActive, onClick, icon, label }: any) {
+function NavBtn({ isActive, onClick, icon, label }: NavBtnProps) {
   return (
     <button 
       onClick={onClick}

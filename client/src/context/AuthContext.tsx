@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react'; // Added useEffect back for router if needed, but removed for init
+import { createContext, useContext, useEffect, useState } from 'react'; // Added useEffect back for router if needed, but removed for init
 import { useRouter } from 'next/navigation';
+// import { api } from '@/lib/api';
 
 interface User {
   name: string;
@@ -20,10 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
-  // FIX: Lazy Initialize State
-  // Pass a function to useState. This runs ONLY once on mount.
   const [user, setUser] = useState<User | null>(() => {
-    // Check for window to avoid SSR errors (Next.js specific)
     if (typeof window !== 'undefined') {
       const storedUser = localStorage.getItem('user');
       const token = localStorage.getItem('token');
@@ -34,9 +32,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   });
 
-  // Since we initialize instantly, loading is technically always false 
-  // unless you are verifying the token with an API call.
-  const [isLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(false); // Assume token is valid for now, or handle actual verification if needed
+
+      
+
+      // try {
+      //   const response = await api.get('/menu');
+      //   setUser(response.data.user);
+      // } catch (error) {
+      //   console.error("Token verification failed:", error);
+      //   // 5. If API fails (401), Logout
+      //   localStorage.removeItem('token');
+      //   localStorage.removeItem('user');
+      //   setUser(null);
+      // } finally {
+      //   // 6. ALWAYS finish loading, whether success or fail
+      //   setIsLoading(false);
+      // }
+    };
+
+    verifyToken();
+  }, []);
 
   const login = (token: string, userData: User) => {
     localStorage.setItem('token', token);
@@ -49,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    router.push('/'); 
+    router.push('/');
   };
 
   return (

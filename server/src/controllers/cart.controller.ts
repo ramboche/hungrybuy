@@ -53,13 +53,11 @@ export async function addToCart(req: AuthenticatedRequest, res: Response) {
       return res.status(400).json({ message: "Cannot add item to cart" });
     }
 
-    const cart = await prisma.cartItem.findUnique({
+    const cart = await prisma.cartItem.findFirst({
       where: {
-        tableId_menuItemId_variantId: {
-          tableId,
-          menuItemId,
-          variantId: variantId ?? null,
-        },
+        tableId,
+        menuItemId,
+        variantId: variantId ?? null,
       },
     });
 

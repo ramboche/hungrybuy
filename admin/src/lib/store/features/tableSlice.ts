@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '@/lib/api';
 import { Table } from '@/lib/types';
+import { AxiosError } from 'axios';
 
 interface TableState {
   tables: Table[];
@@ -24,8 +25,9 @@ export const fetchTables = createAsyncThunk(
       const response = await api.get('/table');
       console.log(response);
       return response.data.data.tables; // Expecting { data: Table[] }
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch tables');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch tables');
     }
   }
 );
@@ -37,8 +39,9 @@ export const addTable = createAsyncThunk(
       // Matches POST /api/admin/tables
       const response = await api.post('/table/create', { number });
       return response.data.data; // Expecting { data: Table }
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to add table');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to add table');
     }
   }
 );
@@ -50,8 +53,9 @@ export const deleteTable = createAsyncThunk(
       // Matches DELETE /api/admin/tables/:id
       await api.delete(`/table/${id}`);
       return id; // Return ID to remove it from state locally
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete table');
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to delete table');
     }
   }
 );

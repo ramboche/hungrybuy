@@ -103,7 +103,7 @@ export async function updateMenuItem(req: AuthenticatedRequest, res: Response) {
         ...(price !== undefined && { price: Number(price) }),
         ...(foodType !== undefined && { foodType }),
         ...(categoryId !== undefined && { categoryId }),
-        ...(isAvailable !== undefined && { isAvailable }),
+        ...(isAvailable !== undefined && { isAvailable: String(isAvailable) === 'true' }),
         ...(newImage !== undefined && { image: newImage }),
       },
     });

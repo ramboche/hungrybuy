@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Change this to your actual backend URL (e.g., http://localhost:5000/api)
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://172.20.10.9:5000/';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.156.145.236:5000/';
 
 export const api = axios.create({
   baseURL: API_URL,

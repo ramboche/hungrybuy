@@ -7,54 +7,141 @@ import ProductCard from "@/components/cards/ProductCard";
 import ProductDialog from "@/components/ui/ProductDialog";
 import DietFilter from "@/components/ui/DietFilter";
 import CartPage from "@/components/ui/CartPage";
-import { CATEGORIES } from "@/lib/constants";
-import { Product } from "@/lib/types";
-import { useState, useEffect, Suspense } from "react";
+// import { CATEGORIES } from "@/lib/constants";
+import { Product, Category } from "@/lib/types";
+import { useState, useEffect, Suspense, use } from "react";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 import QRHandler from "@/components/auth/QRHandler";
+import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
+
+
+  const router = useRouter();
+  // const [isAuthorized, setIsAuthorized] = useState(false);
+  const { isLoading, user } = useAuth();
+
   const [dietFilter, setDietFilter] = useState<"all" | "veg" | "non-veg">(
     "all",
   );
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isMenuLoading, setIsMenuLoading] = useState(true);
 
-  // Global Cart State
   const { cart, addToCart, updateQuantity, placeOrder } = useCart();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentView, setCurrentView] = useState<"HOME" | "CART">("HOME");
 
+  // useEffect(() => {
+
+  //   const hasQueryParams = window.location.search.length > 0;
+
+  //   const token = localStorage.getItem("token");
+
+  //   if (!token && !hasQueryParams) {
+  //     router.push("/login");
+  //   } else {
+  //     setIsAuthorized(true);
+  //   }
+  // }, [router]);
+
+
   // --- 1. Simplified Fetch (Matches Backend Directly) ---
+
+
   useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login");
+    }
+  }, [isLoading, user, router]);
+
+  useEffect(() => {
+    // if (!isAuthorized) return;
+    if (!user) return;
+
     const fetchMenu = async () => {
       try {
         const res = await api.get("/menu");
-        console.log(res);
         const dbProducts = res.data.data.items;
 
-        // Just add the fields missing from DB (image, qty)
-        const readyProducts = dbProducts.map((p: Omit<Product, "image" | "qty">) => ({
+        const readyProducts = dbProducts.map((p: Product) => ({
           ...p,
-          image: "/images/burgers.jpeg", // Default image until DB has them
-          qty: 42, // Default qty for demo
+          image: "/images/burgers.jpeg",
+          qty: 42,
         }));
 
         setProducts(readyProducts);
       } catch (error) {
-        console.error("Failed to load menu", error);
+        const err = error as AxiosError<{ message: string }>;
+        console.error("Failed to load menu", err);
+
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem("token");
+          router.push("/login");
+        }
       } finally {
         setIsMenuLoading(false);
       }
     };
 
+    const fetchCategoreies = async () => {
+      try {
+        const res = await api.get("/categories");
+        const dbCategories: Category[] = res.data.data.categories;
+        setCategories(dbCategories);
+
+      } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+        console.error("Failed to load categories", err);
+
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem("token");
+          router.push("/login");
+        }
+      }
+    }
+
     fetchMenu();
-  }, []);
+    fetchCategoreies();
+
+  }, [user, router]);
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-50">
+        
+      
+        <div className="relative flex items-center justify-center">
+          
+          <span className="absolute inline-flex h-20 w-20 animate-ping rounded-full bg-brand-red opacity-20 duration-1000"></span>
+          <span className="absolute inline-flex h-16 w-16 animate-ping rounded-full bg-brand-red opacity-30 delay-150 duration-1000"></span>
+          
+         
+          <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-brand-red shadow-xl shadow-red-200 ring-4 ring-white">
+          
+            <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-white border-t-transparent" />
+          </div>
+        </div>
+        <div className="mt-8 flex flex-col items-center gap-1">
+          <h2 className="animate-pulse text-lg font-black tracking-tight text-gray-800">
+            HungryBuy
+          </h2>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-gray-400">
+            Verifying Access...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   // --- Helpers ---
   const getTotalCartCount = () => {
@@ -77,6 +164,7 @@ export default function Home() {
 
   // --- Event Handlers ---
   const increaseSingleItem = async (product: Product) => {
+    console.log(product)
     await addToCart(product.id, 1);
   };
 
@@ -121,7 +209,6 @@ export default function Home() {
   };
 
   const handleCardAddClick = (product: Product) => {
-    // CHANGE: Check 'variants' instead of 'sizes'
     if (product.variants && product.variants.length > 0) {
       setSelectedProduct(product);
       setIsDialogOpen(true);
@@ -207,7 +294,7 @@ export default function Home() {
                     isActive={selectedCategory === "all"}
                     onClick={() => setSelectedCategory("all")}
                   />
-                  {CATEGORIES.map((cat) => (
+                  {categories.map((cat) => (
                     <CategoryItem
                       key={cat.id}
                       {...cat}
@@ -269,7 +356,6 @@ export default function Home() {
                   .filter((i) => i.menuItem.id === selectedProduct.id)
                   .reduce(
                     (acc, item) => {
-                      // CHANGE: Use 'label' because Backend/Types now use 'label'
                       if (item.variant)
                         acc[item.variant.label] = item.quantity;
                       return acc;

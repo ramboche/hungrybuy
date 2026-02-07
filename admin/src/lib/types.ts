@@ -75,3 +75,7 @@ export interface Table {
   number: number;
   qrToken: string;
 }
+
+export type ProductFormData = Omit<Product, 'id' | 'variants'> & { 
+  variants: { id?: string; label: string; price: number }[] 
+};

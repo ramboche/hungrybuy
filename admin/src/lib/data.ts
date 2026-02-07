@@ -1,4 +1,4 @@
-import { Order, Product, Category, OrderStatus } from './types';
+import { Product, Category} from './types';
 
 // --- MOCK CATEGORIES ---
 export const INITIAL_CATEGORIES: Category[] = [

@@ -1,6 +1,5 @@
 import { UtensilsCrossed, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Order, OrderStatus } from '@/lib/types';
-import { table } from 'console';
 
 interface OrderRowProps {
   order: Order;

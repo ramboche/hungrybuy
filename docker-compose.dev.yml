@@ -16,6 +16,7 @@ services:
   server:
     build:
       context: ./server
+      dockerfile: Dockerfile.dev
     container_name: hungrybuy-server-dev
     command: npm run dev
     env_file:
@@ -33,6 +34,7 @@ services:
   client:
     build:
       context: ./client
+      dockerfile: Dockerfile.dev
     container_name: hungrybuy-client-dev
     command: npm run dev
     env_file:
@@ -51,6 +53,7 @@ services:
   admin:
     build:
       context: ./admin
+      dockerfile: Dockerfile.dev
     container_name: hungrybuy-admin-dev
     command: npm run dev
     env_file:

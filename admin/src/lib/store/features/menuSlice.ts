@@ -4,7 +4,7 @@ import { Product, MenuVariant } from '@/lib/types';
 import { AxiosError } from 'axios';
 
 interface AddProductThunkPayload {
-    itemData: FormData; // Contains name, price, image, etc.
+    itemData: FormData; 
     variants: { label: string; price: number }[];
 }
 
@@ -26,21 +26,6 @@ const initialState: MenuState = {
     error: null,
 };
 
-// --- HELPER TYPES ---
-// Updated: variants can now optionally have an 'id' (needed for updates)
-interface CreateProductPayload {
-    name: string;
-    description?: string;
-    price?: number; // in cents
-    categoryId: string;
-    foodType: 'VEG' | 'NON_VEG';
-    variants: { id?: string; label: string; price: number }[];
-}
-
-interface UpdateProductPayload extends CreateProductPayload {
-    id: string;
-    isAvailable: boolean;
-}
 
 // --- ASYNC THUNKS ---
 

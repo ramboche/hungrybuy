@@ -9,7 +9,7 @@ import { ShoppingBag, DollarSign, Users, Plus } from 'lucide-react';
 import QrCodeModal from '@/components/admin/modals/QrCodeModal';
 
 // Types & Data
-import { Order, OrderStatus, Product, Table, ProductFormData } from '@/lib/types';
+import { Order, OrderStatus, Product, Table} from '@/lib/types';
 import { ORDER_TABS } from '@/lib/data';
 
 // Redux

@@ -24,13 +24,10 @@ export default function LoginPage() {
   const handleSendOtp = async (phone: string) => {
     setIsLoading(true);
     try {
-      // 1. Validate Phone (Simple check)
       if (phone.length < 10) throw new Error("Invalid phone number");
 
-      // 2. Call Backend
       await api.post("/auth/send-otp", { phone });
 
-      // 3. Update UI on Success
       setDirection(1);
       setPhoneNumber(phone);
       setStep("OTP");
@@ -53,10 +50,8 @@ export default function LoginPage() {
   const handleVerifyOtp = async (otp: string) => {
     setIsLoading(true);
     try {
-      // 1. Try to Login
       const res = await api.post("/auth/login", { phone: phoneNumber, otp });
 
-      // 2. Success: Save user & Redirect
       const { token, data } = res.data;
       login(token, data.user);
 
@@ -65,10 +60,8 @@ export default function LoginPage() {
     } catch (error) {
 
       const err = error as AxiosError<{ message: string }>;
-      // 3. Handle 404 (User not found) -> Auto Register or Error
       if (err.response?.status === 404) {
         try {
-          // Optional: Auto-register if user doesn't exist
           const regRes = await api.post("/auth/register", {
             phone: phoneNumber,
             otp,
@@ -96,8 +89,8 @@ export default function LoginPage() {
           <PhoneStep
             key="phone"
             custom={direction}
-            onNext={handleSendOtp} // Pass the async handler
-            isLoading={isLoading} // Pass loading state
+            onNext={handleSendOtp} 
+            isLoading={isLoading} 
           />
         )}
         {step === "OTP" && (
@@ -106,8 +99,8 @@ export default function LoginPage() {
             custom={direction}
             phoneNumber={phoneNumber}
             onBack={handleBack}
-            onVerify={handleVerifyOtp} // Pass the async handler
-            isLoading={isLoading} // Pass loading state
+            onVerify={handleVerifyOtp}
+            isLoading={isLoading} 
           />
         )}
       </AnimatePresence>

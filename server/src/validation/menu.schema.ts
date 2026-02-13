@@ -4,7 +4,7 @@ export const CreateMenuBody = z.object({
   name: z.string(),
   foodType: z.enum(["VEG", "NON_VEG"]),
   categoryId: z.uuidv4(),
-  price: z.string().optional(),
+  price: z.coerce.number().optional(),
   description: z.string().optional(),
 });
 
@@ -27,10 +27,10 @@ export type UpdateMenuItemParams = z.infer<typeof UpdateMenuItemParams>;
 export const UpdateMenuItemsBody = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
-  price: z.number().optional(),
+  price: z.coerce.number().optional(),
   foodType: z.enum(["VEG", "NON_VEG"]).optional(),
   categoryId: z.uuidv4().optional(),
-  isAvailable: z.boolean().optional(),
+  isAvailable: z.coerce.boolean().optional(),
 });
 
 export type UpdateMenuItemsBody = z.infer<typeof UpdateMenuItemsBody>;
@@ -69,7 +69,7 @@ export type UpdateVariantParams = z.infer<typeof UpdateVariantParams>;
 
 export const UpdateVariantBody = z.object({
   label: z.string().optional(),
-  price: z.number().optional(),
+  price: z.coerce.number().optional(),
 });
 
 export type UpdateVariantBody = z.infer<typeof UpdateVariantBody>;

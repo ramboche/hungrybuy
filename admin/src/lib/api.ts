@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // 1. Define Base URL (Change to match your backend)
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // 2. Create the Axios Instance
 export const api = axios.create({

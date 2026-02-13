@@ -1,16 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import QRScannerModal from '@/components/auth/QRScannerModal'; 
+import QRScannerModal from '@/components/auth/QRScannerModal';
 import { ShoppingBag, Search, QrCode } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 interface HeaderProps {
   cartCount?: number;
   onCartClick?: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
-export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
+export default function Header({ cartCount = 0, onCartClick, searchQuery, onSearchChange }: HeaderProps) {
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { tableId, tableNo } = useCart();
@@ -18,7 +20,7 @@ export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
   const handleScan = (scannedUrl: string) => {
     try {
       let scannedTableId = '';
-      
+
       if (scannedUrl.startsWith('http')) {
         const urlObj = new URL(scannedUrl);
         scannedTableId = urlObj.searchParams.get('table') || '';
@@ -28,7 +30,7 @@ export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
 
       if (scannedTableId) {
         setIsScannerOpen(false);
-        window.location.href = `/?table=${scannedTableId}`; 
+        window.location.href = `/?table=${scannedTableId}`;
       } else {
         alert("Invalid QR Code. Please scan a valid table code.");
       }
@@ -61,13 +63,15 @@ export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
             <input
               type="text"
               placeholder="Search food..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
               className="w-full h-12 bg-white rounded-full pl-6 pr-10 text-sm text-gray-600 outline-none border border-transparent focus:border-brand-red transition-all shadow-sm placeholder:text-gray-400"
             />
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           </div>
 
           {/* RIGHT: Table Indicator or QR Button */}
-          <button 
+          <button
             onClick={() => setIsScannerOpen(true)}
             className={`
               w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm border transition-all relative bg-white
@@ -80,7 +84,7 @@ export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
                 <span className="text-base font-black text-brand-dark -mt-0.5">{tableNo}</span>
               </div>
             ) : (
-              <QrCode size={20} className="text-brand-dark" /> 
+              <QrCode size={20} className="text-brand-dark" />
             )}
           </button>
 
@@ -88,10 +92,10 @@ export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
       </div>
 
       {/* --- QR SCANNER MODAL --- */}
-      <QRScannerModal 
-        isOpen={isScannerOpen} 
-        onClose={() => setIsScannerOpen(false)} 
-        onScan={handleScan} 
+      <QRScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScan={handleScan}
       />
     </>
   );

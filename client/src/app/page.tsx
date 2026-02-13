@@ -30,6 +30,7 @@ export default function Home() {
     "all",
   );
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -158,10 +159,15 @@ export default function Home() {
 
     const matchesDiet =
       dietFilter === "all" || product.foodType === targetFoodType;
+
     const matchesCategory =
       selectedCategory === "all" || product.categoryId === selectedCategory;
 
-    return matchesDiet && matchesCategory;
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return matchesDiet && matchesCategory && matchesSearch;
   });
 
   return (
@@ -177,6 +183,8 @@ export default function Home() {
           <Header
             cartCount={getTotalCartCount()}
             onCartClick={() => router.push("/cart")}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
           <div className="">
             <DietFilter

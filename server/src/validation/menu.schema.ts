@@ -49,7 +49,7 @@ export type CreateVariantParams = z.infer<typeof CreateVariantParams>;
 
 export const CreateVariantBody = z.object({
   label: z.string(),
-  price: z.string()
+  price: z.coerce.number()
 });
 
 export type CreateVariantBody = z.infer<typeof CreateVariantBody>;

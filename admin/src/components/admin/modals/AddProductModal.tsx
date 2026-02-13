@@ -18,7 +18,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
   // --- Form State ---
   const [formData, setFormData] = useState({
     name: '',
-    price: '',       // String for input (e.g. "10.50")
+    price: '',      
     category: '',
     description: '',
     image: '',
@@ -30,6 +30,11 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
   const [variants, setVariants] = useState<{ id?: string; label: string; price: string }[]>([]);
   const [preview, setPreview] = useState<string>('');
 
+  const imageUrl = initialData?.image 
+    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${initialData.image}` 
+    : null;
+
+
   // --- Reset / Populate ---
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -38,14 +43,14 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
         if (initialData) {
           setFormData({
             name: initialData.name,
-            price: initialData.price ? (initialData.price / 100).toFixed(2) : '', // Cents -> Dollars
+            price: initialData.price ? (initialData.price / 100).toFixed(2) : '', 
             category: initialData.categoryId,
             description: initialData.description || '',
             image: initialData.image || '',
             inStock: initialData.isAvailable ?? true,
             foodType: initialData.foodType || 'NON_VEG',
           });
-          setPreview(initialData.image || '');
+          setPreview(imageUrl || '');
 
           if (initialData.variants) {
             setVariants(initialData.variants.map(v => ({
@@ -106,7 +111,8 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const priceInCents = Math.round(parseFloat(formData.price || '0') * 100);
+    const safePrice = formData.price === '' ? '0' : formData.price;
+    const priceInCents = Math.round(parseFloat(safePrice) * 100);
 
     const formattedVariants = variants
       .filter(v => v.label && v.price) 
@@ -166,7 +172,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      unoptimized={true} /// Used for local development only
+                      unoptimized={true} 
                     />
                   </div>
                 ) : (
@@ -235,7 +241,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
                 <input
-                  type="number" step="0.01" required placeholder="0.00"
+                  type="number" step="0.01" placeholder="0.00"
                   className="w-full h-12 rounded-xl border border-gray-200 pl-8 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red transition-all"
                   value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })}
                 />

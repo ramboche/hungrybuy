@@ -81,7 +81,7 @@ export default function QrCodeModal({ isOpen, onClose, table }: Props) {
   if (!isOpen || !table) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
 
         {/* Header */}
@@ -93,7 +93,7 @@ export default function QrCodeModal({ isOpen, onClose, table }: Props) {
         </div>
 
         {/* Content */}
-        <div className="p-8 flex flex-col items-center justify-center bg-white min-h-[300px]">
+        <div className="p-8 flex flex-col items-center justify-center bg-white min-h-75">
           {isLoading ? (
             <div className="flex flex-col items-center gap-2 text-gray-400">
               <Loader2 className="animate-spin" size={32} />
@@ -107,7 +107,7 @@ export default function QrCodeModal({ isOpen, onClose, table }: Props) {
                 width={192}
                 height={192}
                 className="object-contain rounded-lg border border-gray-100 shadow-sm"
-                unoptimized // <--- MANDATORY for Blob URLs
+                unoptimized = {true} 
               />
             </div>
           ) : (

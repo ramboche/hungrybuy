@@ -9,18 +9,24 @@ interface Props {
 }
 
 export default function MenuRow({ product, onEdit, onDelete }: Props) {
+
+  const imageUrl = product.image 
+    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${product.image}` 
+    : null;
+
+  console.log(product)
   return (
     <div className="bg-white p-4 rounded-2xl border border-gray-100 flex gap-4 items-center shadow-sm group hover:shadow-md transition-all">
       {/* Image */}
       <div className="w-20 h-20 shrink-0 bg-gray-100 rounded-xl overflow-hidden relative">
         <div className="relative w-full h-full">
           <Image
-            src={product.image!}
+            src={imageUrl || '/placeholder.png'}
             alt={product.name}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
-            unoptimized={true} /// Used for local development only
+            unoptimized={true}
           />
         </div>
       </div>

@@ -27,7 +27,7 @@ export const UpdateCartParams = z.object({
 export type UpdateCartParams = z.infer<typeof UpdateCartParams>;
 
 export const UpdateCartBody = z.object({
-  quantity: z.coerce.number().int().min(1),
+  quantity: z.coerce.number().int().min(0),
 });
 
 export type UpdateCartBody = z.infer<typeof UpdateCartBody>;

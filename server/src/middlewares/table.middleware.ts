@@ -7,7 +7,7 @@ export function verifyTable(
   res: Response,
   next: NextFunction,
 ) {
-  const tableHeader = req.headers["x-table-id"] as string;
+  const tableHeader = req.headers["x-table-token"] as string;
   if (!tableHeader) {
     return res.status(401).json({ message: "Table session token invalid" });
   }
@@ -15,7 +15,8 @@ export function verifyTable(
   try {
     const payload = verifyTableToken(tableHeader);
     req.table = {
-      tableId: payload.tableId,
+      id: payload.id,
+      number: payload.number,
     };
 
     next();

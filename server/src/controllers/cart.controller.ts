@@ -3,25 +3,38 @@ import { prisma } from "../lib/prisma";
 import { TypedRequest } from "../types/request";
 import {
   AddCartBody,
-  AddCartParams,
   DeleteCartParams,
-  GetCartParams,
   UpdateCartBody,
   UpdateCartParams,
 } from "../validation/cart.schema";
 
+export async function getCart(req: TypedRequest, res: Response) {
+  try {
+    const { id: tableId } = req.table!;
+
+    const cart = await prisma.cartItem.findMany({
+      where: { tableId },
+      include: {
+        menuItem: true,
+        variant: true,
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "fetched cart successfully", data: { cart } });
+  } catch (error) {
+    console.log("GET_CART_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 export async function addToCart(
-  req: TypedRequest<AddCartParams, AddCartBody, {}>,
+  req: TypedRequest<{}, AddCartBody, {}>,
   res: Response,
 ) {
   try {
-    const { tableId } = req.params;
-
-    const table = await prisma.table.findUnique({ where: { id: tableId } });
-    if (!table) {
-      return res.status(404).json({ message: "Table not found" });
-    }
-
+    const { id: tableId } = req.table!;
     const { menuItemId, variantId, quantity } = req.body;
 
     const menuItem = await prisma.menuItem.findUnique({
@@ -58,7 +71,7 @@ export async function addToCart(
       return res.status(400).json({ message: "Cannot add item to cart" });
     }
 
-    const cart = await prisma.cartItem.findFirst({
+    const cartItem = await prisma.cartItem.findFirst({
       where: {
         tableId,
         menuItemId,
@@ -66,9 +79,9 @@ export async function addToCart(
       },
     });
 
-    if (cart) {
+    if (cartItem) {
       const updatedCart = await prisma.cartItem.update({
-        where: { id: cart.id },
+        where: { id: cartItem.id },
         data: { quantity },
       });
 
@@ -95,40 +108,12 @@ export async function addToCart(
   }
 }
 
-export async function getCart(
-  req: TypedRequest<GetCartParams, {}, {}>,
-  res: Response,
-) {
-  try {
-    const { tableId } = req.params;
-
-    const table = await prisma.table.findUnique({ where: { id: tableId } });
-    if (!table) {
-      return res.status(404).json({ message: "Table not found" });
-    }
-
-    const cart = await prisma.cartItem.findMany({
-      where: { tableId },
-      include: {
-        menuItem: true,
-        variant: true,
-      },
-    });
-
-    return res
-      .status(200)
-      .json({ messaage: "fetched cart successfully", data: { cart } });
-  } catch (error) {
-    console.log("GET_CART_ERROR", error);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
-}
-
 export async function updateCart(
   req: TypedRequest<UpdateCartParams, UpdateCartBody, {}>,
   res: Response,
 ) {
   try {
+    const { id: tableId } = req.table!;
     const { cartId } = req.params;
     const { quantity } = req.body;
 
@@ -141,7 +126,11 @@ export async function updateCart(
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    if (!cart.menuItem.isAvailable) {
+    if (cart.tableId !== tableId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    if (!cart.menuItem || !cart.menuItem.isAvailable) {
       return res.status(400).json({ message: "Item is no longer present" });
     }
 
@@ -169,19 +158,16 @@ export async function deleteCartItem(
   res: Response,
 ) {
   try {
+    const { id: tableId } = req.table!;
     const { cartId } = req.params;
 
-    const cart = await prisma.cartItem.findUnique({
-      where: { id: cartId },
+    const result = await prisma.cartItem.deleteMany({
+      where: { id: cartId, tableId },
     });
 
-    if (!cart) {
+    if (result.count === 0) {
       return res.status(404).json({ message: "Cart not found" });
     }
-
-    await prisma.cartItem.delete({
-      where: { id: cartId },
-    });
 
     return res.status(200).json({ message: "Deleted successfully" });
   } catch (error) {

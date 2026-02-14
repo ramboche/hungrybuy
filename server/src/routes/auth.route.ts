@@ -1,18 +1,14 @@
 import { Router } from "express";
-import { registerUser, loginUser } from "../controllers/auth.controller";
+import { loginUser } from "../controllers/auth.controller";
 import { sendOtp } from "../controllers/otp.controller";
 import { validate } from "../middlewares/validate.middleware";
-import {
-  LoginUserBody,
-  OtpRequestBody,
-  RegisterUserBody,
-} from "../validation/auth.schema";
+import { LoginUserBody } from "../validation/auth.schema";
+import { SendOtpBody } from "../validation/otp.schema";
 
 const router = Router();
 
-router.post("/register", validate(RegisterUserBody), registerUser);
 router.post("/login", validate(LoginUserBody), loginUser);
 
-router.post("/send-otp", validate(OtpRequestBody), sendOtp);
+router.post("/send-otp", validate(SendOtpBody), sendOtp);
 
 export default router;

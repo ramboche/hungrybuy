@@ -1,21 +1,22 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { canRequestOtp, generateOtp, saveOtp } from "../utils/otpStore";
+import { TypedRequest } from "../types/request";
+import { SendOtpBody } from "../validation/otp.schema";
 
-export async function sendOtp(req: Request, res: Response) {
+export async function sendOtp(
+  req: TypedRequest<{}, SendOtpBody, {}>,
+  res: Response,
+) {
   try {
-    // -- -- -- -- -- validate phone -- -- -- -- --
     const { phone } = req.body;
 
-    // -- -- -- -- -- rate limit otp -- -- -- -- --
     if (!canRequestOtp(phone)) {
       return res.status(429).json({ message: "Too many requests" });
     }
 
-    // -- -- -- -- -- generate otp -- -- -- -- --
     const otp = generateOtp();
     saveOtp(phone, otp);
 
-    // -- -- -- -- -- send otp -- -- -- -- --
     return res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
     console.log("AUTH_SEND_OTP_ERROR:", error);

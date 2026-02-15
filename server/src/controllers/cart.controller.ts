@@ -87,7 +87,7 @@ export async function addToCart(
 
       return res
         .status(200)
-        .json({ message: "Updated successfully", data: { cart: updatedCart } });
+        .json({ message: "Updated successfully", data: { item: updatedCart } });
     }
 
     const newItem = await prisma.cartItem.create({

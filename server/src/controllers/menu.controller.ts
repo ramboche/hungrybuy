@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { prisma } from "../lib/prisma";
-import { Prisma } from "@prisma/client";
+import { FoodType, Prisma } from "@prisma/client";
 import { deleteFileByUrl } from "../utils/file";
 import { TypedRequest } from "../types/request";
 import {
@@ -17,12 +17,55 @@ import {
   UpdateVariantParams,
 } from "../validation/menu.schema";
 
+export async function getMenu(
+  req: TypedRequest<{}, {}, GetMenuQuery>,
+  res: Response,
+) {
+  try {
+    const { categoryId, foodType, search } = req.query;
+
+    const searchText =
+      typeof search === "string" && search.trim().length >= 2
+        ? search.trim()
+        : undefined;
+
+    const items = await prisma.menuItem.findMany({
+      where: {
+        isAvailable: true,
+        ...(categoryId && { categoryId: String(categoryId) }),
+        ...(foodType && { foodType: foodType as FoodType }),
+        ...(searchText && {
+          name: { contains: searchText, mode: "insensitive" },
+        }),
+      },
+      orderBy: { name: "asc" },
+      include: { category: true, variants: true },
+    });
+
+    return res.status(200).json({
+      message: "Fetched all menu items",
+      data: { items },
+    });
+  } catch (error) {
+    console.log("MENU_GET_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 export async function createMenuItem(
   req: TypedRequest<{}, CreateMenuBody, {}>,
   res: Response,
 ) {
   try {
     const { name, price, foodType, categoryId, description } = req.body;
+
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
 
     let image: string | null = null;
     if (req.file) {
@@ -49,34 +92,6 @@ export async function createMenuItem(
   }
 }
 
-export async function getMenu(
-  req: TypedRequest<{}, {}, GetMenuQuery>,
-  res: Response,
-) {
-  try {
-    const { categoryId, foodType, search } = req.query;
-
-    const items = await prisma.menuItem.findMany({
-      where: {
-        isAvailable: true,
-        ...(categoryId && { categoryId: String(categoryId) }),
-        ...(foodType && { foodType: foodType as any }),
-        ...(search && {
-          name: { contains: String(search).trim(), mode: "insensitive" },
-        }),
-      },
-      include: { category: true, variants: true },
-    });
-
-    return res
-      .status(200)
-      .json({ message: "Fetched all menu items", data: { items } });
-  } catch (error) {
-    console.log("MENU_GET_ERROR", error);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
-}
-
 export async function updateMenuItem(
   req: TypedRequest<UpdateMenuItemParams, UpdateMenuItemsBody, {}>,
   res: Response,
@@ -94,6 +109,14 @@ export async function updateMenuItem(
       return res.status(404).json({ message: "Item not found" });
     }
 
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
     let newImage: string | undefined = undefined;
     if (req.file) {
       deleteFileByUrl(item.image);
@@ -109,7 +132,7 @@ export async function updateMenuItem(
         ...(price !== undefined && { price: Number(price) }),
         ...(foodType !== undefined && { foodType }),
         ...(categoryId !== undefined && { categoryId }),
-        ...(isAvailable !== undefined && { isAvailable: String(isAvailable) === 'true' }),
+        ...(isAvailable !== undefined && { isAvailable: isAvailable }),
         ...(newImage !== undefined && { image: newImage }),
       },
     });
@@ -117,7 +140,11 @@ export async function updateMenuItem(
     return res
       .status(200)
       .json({ message: "Updated successfully", data: { item: updatedItem } });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      return res.status(409).json({ message: "Item already exists" });
+    }
+
     console.log("UPDATE_MENU_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
@@ -142,45 +169,12 @@ export async function deleteMenuItem(
 
     await prisma.menuItem.delete({ where: { id } });
     return res.status(200).json({ message: "Deleted successfully" });
-  } catch (error) {
-    console.log("DELETE_MENU_ERROR", error);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
-}
-
-export async function createVariant(
-  req: TypedRequest<CreateVariantParams, CreateVariantBody, {}>,
-  res: Response,
-) {
-  try {
-    const { menuItemId } = req.params;
-    const { label, price } = req.body;
-
-    const variant = await prisma.menuVariant.findFirst({
-      where: {
-        menuItemId,
-        label,
-      },
-    });
-
-    if (variant) {
-      return res.status(409).json({ message: "Variant already exists" });
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      return res.status(404).json({ message: "Item not found" });
     }
 
-    const newVariant = await prisma.menuVariant.create({
-      data: {
-        label,
-        price: new Prisma.Decimal(price),
-        menuItemId,
-      },
-    });
-
-    return res.status(201).json({
-      message: "Variant created successfully",
-      data: { variant: newVariant },
-    });
-  } catch (error) {
-    console.log("CREATE_VARIANT_ERROR", error);
+    console.log("DELETE_MENU_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
@@ -191,6 +185,14 @@ export async function getAllVariants(
 ) {
   try {
     const { menuItemId } = req.params;
+
+    const menuItem = await prisma.menuItem.findUnique({
+      where: { id: menuItemId },
+    });
+
+    if (!menuItem) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
 
     const variants = await prisma.menuVariant.findMany({
       where: { menuItemId },
@@ -206,6 +208,44 @@ export async function getAllVariants(
   }
 }
 
+export async function createVariant(
+  req: TypedRequest<CreateVariantParams, CreateVariantBody, {}>,
+  res: Response,
+) {
+  try {
+    const { menuItemId } = req.params;
+    const { label, price } = req.body;
+
+    const menuItem = await prisma.menuItem.findUnique({
+      where: { id: menuItemId },
+    });
+
+    if (!menuItem) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
+
+    const newVariant = await prisma.menuVariant.create({
+      data: {
+        label,
+        price: new Prisma.Decimal(price),
+        menuItemId,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Variant created successfully",
+      data: { variant: newVariant },
+    });
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      return res.status(409).json({ message: "Variant already exists" });
+    }
+
+    console.log("CREATE_VARIANT_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 export async function updateVariant(
   req: TypedRequest<UpdateVariantParams, UpdateVariantBody, {}>,
   res: Response,
@@ -215,7 +255,7 @@ export async function updateVariant(
 
     const { label, price } = req.body;
 
-    const updatedVariant = await prisma.menuVariant.update({
+    const result = await prisma.menuVariant.updateMany({
       where: { id: variantId, menuItemId },
       data: {
         ...(label !== undefined && { label }),
@@ -223,11 +263,23 @@ export async function updateVariant(
       },
     });
 
+    if (result.count === 0) {
+      return res.status(404).json({ message: "Variant not found" });
+    }
+
+    const updatedVariant = await prisma.menuVariant.findUnique({
+      where: { id: variantId },
+    });
+
     return res.status(200).json({
       message: "Updated successfully",
       data: { variant: updatedVariant },
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      return res.status(409).json({ message: "Variant already exists" });
+    }
+
     console.log("UPDATE_VARIANT_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
@@ -240,9 +292,13 @@ export async function deleteVariant(
   try {
     const { menuItemId, variantId } = req.params;
 
-    await prisma.menuVariant.delete({
+    const result = await prisma.menuVariant.deleteMany({
       where: { id: variantId, menuItemId },
     });
+
+    if (result.count === 0) {
+      return res.status(404).json({ message: "Variant not found" });
+    }
 
     return res.status(200).json({ message: "Deleted successfully" });
   } catch (error) {

@@ -1,17 +1,5 @@
 import { z } from "zod";
 
-export const GetCartParams = z.object({
-  tableId: z.uuidv4(),
-});
-
-export type GetCartParams = z.infer<typeof GetCartParams>;
-
-export const AddCartParams = z.object({
-  tableId: z.uuidv4(),
-});
-
-export type AddCartParams = z.infer<typeof AddCartParams>;
-
 export const AddCartBody = z.object({
   menuItemId: z.uuidv4(),
   variantId: z.uuidv4().optional(),

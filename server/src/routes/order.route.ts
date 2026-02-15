@@ -8,15 +8,16 @@ import {
 import { requireRole } from "../middlewares/role.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import {
-  ActiveOrdersParams,
-  CreateOrderParams,
   UpdateOrderParams,
   UpdateOrderStatusBody,
 } from "../validation/order.schema";
+import { verifyTable } from "../middlewares/table.middleware";
 
 const router = Router();
 
 router.get("/all", requireRole(["ADMIN", "SHOP"]), getAllOrders);
+
+router.get("/active", requireRole(["USER"]), verifyTable, getActiveOrders);
 
 router.patch(
   "/:orderId",
@@ -26,18 +27,6 @@ router.patch(
   updateOrderStatus,
 );
 
-router.get(
-  "/:tableId/active",
-  requireRole(["ADMIN", "SHOP", "USER"]),
-  validate(ActiveOrdersParams, "params"),
-  getActiveOrders,
-);
-
-router.post(
-  "/create/:tableId",
-  requireRole(["ADMIN", "SHOP", "USER"]),
-  validate(CreateOrderParams, "params"),
-  createOrder,
-);
+router.post("/create", requireRole(["USER"]), verifyTable, createOrder);
 
 export default router;

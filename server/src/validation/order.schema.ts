@@ -11,15 +11,3 @@ export const UpdateOrderStatusBody = z.object({
 });
 
 export type UpdateOrderStatusBody = z.infer<typeof UpdateOrderStatusBody>;
-
-export const ActiveOrdersParams = z.object({
-  tableId: z.uuidv4(),
-});
-
-export type ActiveOrdersParams = z.infer<typeof ActiveOrdersParams>;
-
-export const CreateOrderParams = z.object({
-  tableId: z.uuidv4(),
-});
-
-export type CreateOrderParams = z.infer<typeof CreateOrderParams>;

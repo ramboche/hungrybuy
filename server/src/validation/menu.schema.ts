@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const CreateMenuBody = z.object({
-  name: z.string(),
+  name: z.string().trim(),
+  description: z.string().trim().optional(),
   foodType: z.enum(["VEG", "NON_VEG"]),
   categoryId: z.uuidv4(),
   price: z.coerce.number().optional(),
-  description: z.string().optional(),
 });
 
 export type CreateMenuBody = z.infer<typeof CreateMenuBody>;
@@ -13,7 +13,7 @@ export type CreateMenuBody = z.infer<typeof CreateMenuBody>;
 export const GetMenuQuery = z.object({
   categoryId: z.uuidv4().optional(),
   foodType: z.enum(["VEG", "NON_VEG"]).optional(),
-  search: z.string().optional(),
+  search: z.string().min(2, "Search must be atleast two charecters").optional(),
 });
 
 export type GetMenuQuery = z.infer<typeof GetMenuQuery>;
@@ -48,8 +48,8 @@ export const CreateVariantParams = z.object({
 export type CreateVariantParams = z.infer<typeof CreateVariantParams>;
 
 export const CreateVariantBody = z.object({
-  label: z.string(),
-  price: z.coerce.number()
+  label: z.string().trim(),
+  price: z.coerce.number(),
 });
 
 export type CreateVariantBody = z.infer<typeof CreateVariantBody>;

@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import jwt, { Secret, sign, SignOptions } from "jsonwebtoken";
+import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import { TableContext } from "../types/request";
 
 const JWT_SECRET: Secret = process.env.JWT_SECRET as Secret;

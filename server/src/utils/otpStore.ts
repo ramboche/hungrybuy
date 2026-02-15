@@ -52,7 +52,3 @@ export function verifyOtp(phone: string, otp: string): boolean {
   otpStore.delete(phone);
   return true;
 }
-
-export function deleteOtp(phone: string) {
-  otpStore.delete(phone);
-}

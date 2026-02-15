@@ -1,37 +1,50 @@
 import { z } from "zod";
 
+const emailSchema = z.email().trim().toLowerCase();
+
+const passwordSchema = z.string().trim().min(8).max(32);
+
+const phoneSchema = z
+  .string()
+  .trim()
+  .transform((v) => v.replace(/[\s\-()]/g, ""))
+  .pipe(z.string().regex(/^\+?[1-9]\d{7,14}$/, "Invalid phone number"));
+
+const otpSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{6}$/, "OTP must be 6 digits");
+
+const nameSchema = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? undefined : v))
+  .optional();
+
 export const AdminLoginBody = z.object({
-  email: z.email(),
-  password: z.string().min(8).max(32),
+  email: emailSchema,
+  password: passwordSchema,
 });
 
 export type AdminLoginBody = z.infer<typeof AdminLoginBody>;
 
 export const CreateShopBody = z.object({
-  name: z.string().optional(),
-  email: z.email(),
-  password: z.string().min(8).max(32),
+  name: nameSchema,
+  email: emailSchema,
+  password: passwordSchema,
 });
 
 export type CreateShopBody = z.infer<typeof CreateShopBody>;
 
-export const RegisterUserBody = z.object({
-  name: z.string().optional(),
-  phone: z.string().regex(/^\+?[1-9]\d{7,14}$/, "Invalid phone number"),
-  otp: z.string().regex(/^\d{6}$/, "OTP must be 6 digits"),
-});
-
-export type RegisterUserBody = z.infer<typeof RegisterUserBody>;
-
 export const LoginUserBody = z.object({
-  phone: z.string().regex(/^\+?[1-9]\d{7,14}$/, "Invalid phone number"),
-  otp: z.string().regex(/^\d{6}$/, "OTP must be 6 digits"),
+  phone: phoneSchema,
+  otp: otpSchema,
 });
 
 export type LoginUserBody = z.infer<typeof LoginUserBody>;
 
-export const OtpRequestBody = z.object({
-  phone: z.string().regex(/^\+?[1-9]\d{7,14}$/, "Invalid phone number"),
+export const SendOtpBody = z.object({
+  phone: phoneSchema,
 });
 
-export type OtpRequestBody = z.infer<typeof OtpRequestBody>;
+export type SendOtpBody = z.infer<typeof SendOtpBody>;

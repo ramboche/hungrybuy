@@ -6,34 +6,6 @@ import {
   DeleteCategoryParams,
 } from "../validation/category.schema";
 
-export async function createCategory(
-  req: TypedRequest<{}, CreateCategoryBody, {}>,
-  res: Response,
-) {
-  try {
-    const { name } = req.body;
-
-    const category = await prisma.category.findUnique({ where: { name } });
-    if (category) {
-      return res.status(409).json({ message: "Category already exists" });
-    }
-
-    const newCategory = await prisma.category.create({
-      data: {
-        name,
-      },
-    });
-
-    return res.status(201).json({
-      message: "Category created successfully",
-      data: { category: newCategory },
-    });
-  } catch (error) {
-    console.log("CATEGORY_CREATE_ERROR", error);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
-}
-
 export async function getAllCategories(_: TypedRequest, res: Response) {
   try {
     const categories = await prisma.category.findMany({
@@ -49,6 +21,34 @@ export async function getAllCategories(_: TypedRequest, res: Response) {
   }
 }
 
+export async function createCategory(
+  req: TypedRequest<{}, CreateCategoryBody, {}>,
+  res: Response,
+) {
+  try {
+    let { name } = req.body;
+    name = name.trim().toLocaleLowerCase();
+
+    const newCategory = await prisma.category.create({
+      data: {
+        name,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Category created successfully",
+      data: { category: newCategory },
+    });
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      return res.status(409).json({ message: "Category already exists" });
+    }
+
+    console.log("CATEGORY_CREATE_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 export async function deleteCategory(
   req: TypedRequest<DeleteCategoryParams, {}, {}>,
   res: Response,
@@ -56,13 +56,13 @@ export async function deleteCategory(
   try {
     const { id } = req.params;
 
-    const hasItem = await prisma.menuItem.findFirst({
+    const itemCount = await prisma.menuItem.count({
       where: {
         categoryId: id,
       },
     });
 
-    if (hasItem) {
+    if (itemCount > 0) {
       return res
         .status(400)
         .json({ message: "Cannot delete category with items" });
@@ -70,7 +70,11 @@ export async function deleteCategory(
 
     await prisma.category.delete({ where: { id } });
     return res.status(200).json({ message: "Category deleted successfully" });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      return res.status(409).json({ message: "Category not found" });
+    }
+
     console.log("CATEGORY_DELETE_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }

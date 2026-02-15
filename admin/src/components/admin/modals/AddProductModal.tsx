@@ -31,7 +31,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
   const [preview, setPreview] = useState<string>('');
 
   const imageUrl = initialData?.image 
-    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${initialData.image}` 
+    ? `${process.env.NEXT_PUBLIC_API_URL}${initialData.image}` 
     : null;
 
 

@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client";
-import jwt, { Secret, sign, SignOptions } from "jsonwebtoken";
+import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import { TableContext } from "../types/request";
 
 const JWT_SECRET: Secret = process.env.JWT_SECRET as Secret;
@@ -27,8 +27,10 @@ export function verifyToken<T extends object>(token: string): T {
   return jwt.verify(token, JWT_SECRET) as T;
 }
 
-export function generateTableToken(tableId: TableContext): string {
-  return jwt.sign({ id: tableId }, TABLE_SECRET, { expiresIn: TABLE_EXPIRY });
+export function generateTableToken(table: TableContext): string {
+  return jwt.sign({ id: table.id, number: table.number }, TABLE_SECRET, {
+    expiresIn: TABLE_EXPIRY,
+  });
 }
 
 export function verifyTableToken(token: string): TableContext {

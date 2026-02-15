@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const CreateCategoryBody = z.object({
-  name: z.string().min(3).max(10),
+  name: z.string().trim().toLowerCase().min(3).max(10),
 });
 
 export type CreateCategoryBody = z.infer<typeof CreateCategoryBody>;

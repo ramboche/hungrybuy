@@ -11,7 +11,7 @@ interface Props {
 export default function MenuRow({ product, onEdit, onDelete }: Props) {
 
   const imageUrl = product.image 
-    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}${product.image}` 
+    ? `${process.env.NEXT_PUBLIC_API_URL}${product.image}` 
     : null;
 
   console.log(product)

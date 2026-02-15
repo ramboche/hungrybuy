@@ -8,34 +8,29 @@ import {
 import { validate } from "../middlewares/validate.middleware";
 import {
   AddCartBody,
-  AddCartParams,
   DeleteCartParams,
-  GetCartParams,
   UpdateCartBody,
   UpdateCartParams,
 } from "../validation/cart.schema";
 import { requireRole } from "../middlewares/role.middleware";
+import { verifyTable } from "../middlewares/table.middleware";
 
 const router = Router();
 
-router.get(
-  "/:tableId",
-  requireRole(["ADMIN", "SHOP", "USER"]),
-  validate(GetCartParams, "params"),
-  getCart,
-);
+router.get("/", requireRole(["ADMIN", "SHOP", "USER"]), verifyTable, getCart);
 
 router.post(
-  "/add-to-cart/:tableId",
-  requireRole(["ADMIN", "SHOP", "USER"]),
-  validate(AddCartParams, "params"),
+  "/add",
+  requireRole(["USER"]),
+  verifyTable,
   validate(AddCartBody),
   addToCart,
 );
 
 router.patch(
   "/:cartId",
-  requireRole(["ADMIN", "SHOP", "USER"]),
+  requireRole(["USER"]),
+  verifyTable,
   validate(UpdateCartParams, "params"),
   validate(UpdateCartBody),
   updateCart,
@@ -43,7 +38,8 @@ router.patch(
 
 router.delete(
   "/:cartId",
-  requireRole(["ADMIN", "SHOP", "USER"]),
+  requireRole(["USER"]),
+  verifyTable,
   validate(DeleteCartParams, "params"),
   deleteCartItem,
 );

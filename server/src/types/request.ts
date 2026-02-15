@@ -2,7 +2,8 @@ import { Request } from "express";
 import { AuthenticatedRequest } from "./auth";
 
 export interface TableContext {
-  tableId: string;
+  id: string;
+  number: number;
 }
 
 export type TypedRequest<

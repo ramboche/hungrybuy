@@ -9,6 +9,7 @@ import {
   GenerateTableQrParams,
   ResolveQrParams,
 } from "../validation/table.schema";
+import { generateTableToken } from "../utils/jwt";
 
 export async function createTable(
   req: TypedRequest<{}, CreateTableBody, {}>,
@@ -48,6 +49,7 @@ export async function createTable(
 export async function getAllTables(_: TypedRequest, res: Response) {
   try {
     const tables = await prisma.table.findMany({ orderBy: { number: "asc" } });
+
     return res
       .status(200)
       .json({ message: "Fetched all tables", data: { tables } });
@@ -69,9 +71,15 @@ export async function resolveQr(
       return res.status(404).json({ message: "Table not found" });
     }
 
-    return res
-      .status(200)
-      .json({ message: "Table resolved successfully", data: { table } });
+    const tableToken = generateTableToken({
+      id: table.id,
+      number: table.number,
+    });
+
+    return res.status(200).json({
+      message: "Table resolved successfully",
+      data: { tableNumber: table.number, tableToken },
+    });
   } catch (error) {
     console.log("TABLE_RESOLVE_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });

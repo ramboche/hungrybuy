@@ -68,7 +68,7 @@ model MenuItem {
   ratingCount Int      @default(0)
 
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 
   variants   MenuVariant[]
   cartItems  CartItem[]

@@ -17,7 +17,7 @@ router.get("/", requireRole(["ADMIN", "SHOP", "USER"]), getAllCategories);
 
 router.post(
   "/create",
-  requireRole(["ADMIN"]),
+  requireRole(["ADMIN", "SHOP"]),
   validate(CreateCategoryBody),
   createCategory,
 );
@@ -28,5 +28,5 @@ router.delete(
   validate(DeleteCategoryParams, "params"),
   deleteCategory,
 );
-
+  
 export default router;

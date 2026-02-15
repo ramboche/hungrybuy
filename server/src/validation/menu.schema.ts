@@ -1,19 +1,30 @@
+import { FoodType } from "@prisma/client";
 import { z } from "zod";
 
 export const CreateMenuBody = z.object({
-  name: z.string(),
-  foodType: z.enum(["VEG", "NON_VEG"]),
+  name: z.string().trim().toLowerCase().min(2).max(50),
+  description: z.string().trim().max(300).optional(),
+  foodType: z
+    .enum(Object.values(FoodType) as [FoodType, ...FoodType[]])
+    .optional(),
   categoryId: z.uuidv4(),
-  price: z.coerce.number().optional(),
-  description: z.string().optional(),
+  price: z.coerce.number().min(0).max(100000).optional(),
 });
 
 export type CreateMenuBody = z.infer<typeof CreateMenuBody>;
 
 export const GetMenuQuery = z.object({
   categoryId: z.uuidv4().optional(),
-  foodType: z.enum(["VEG", "NON_VEG"]).optional(),
-  search: z.string().optional(),
+  foodType: z
+    .enum(Object.values(FoodType) as [FoodType, ...FoodType[]])
+    .optional(),
+  search: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(2, "Search must be atleast two charecters")
+    .max(50)
+    .optional(),
 });
 
 export type GetMenuQuery = z.infer<typeof GetMenuQuery>;
@@ -25,10 +36,12 @@ export const UpdateMenuItemParams = z.object({
 export type UpdateMenuItemParams = z.infer<typeof UpdateMenuItemParams>;
 
 export const UpdateMenuItemsBody = z.object({
-  name: z.string().optional(),
-  description: z.string().optional(),
-  price: z.coerce.number().optional(),
-  foodType: z.enum(["VEG", "NON_VEG"]).optional(),
+  name: z.string().trim().toLowerCase().min(2).max(50).optional(),
+  description: z.string().trim().max(300).optional(),
+  price: z.coerce.number().min(0).max(100000).optional(),
+  foodType: z
+    .enum(Object.values(FoodType) as [FoodType, ...FoodType[]])
+    .optional(),
   categoryId: z.uuidv4().optional(),
   isAvailable: z.coerce.boolean().optional(),
 });
@@ -48,8 +61,8 @@ export const CreateVariantParams = z.object({
 export type CreateVariantParams = z.infer<typeof CreateVariantParams>;
 
 export const CreateVariantBody = z.object({
-  label: z.string(),
-  price: z.coerce.number()
+  label: z.string().trim().toLowerCase().min(1).max(30),
+  price: z.coerce.number().min(0).max(100000),
 });
 
 export type CreateVariantBody = z.infer<typeof CreateVariantBody>;
@@ -68,8 +81,8 @@ export type GetVariantParams = z.infer<typeof GetVariantParams>;
 export type UpdateVariantParams = z.infer<typeof UpdateVariantParams>;
 
 export const UpdateVariantBody = z.object({
-  label: z.string().optional(),
-  price: z.coerce.number().optional(),
+  label: z.string().trim().toLowerCase().min(1).max(30).optional(),
+  price: z.coerce.number().min(0).max(100000).optional(),
 });
 
 export type UpdateVariantBody = z.infer<typeof UpdateVariantBody>;

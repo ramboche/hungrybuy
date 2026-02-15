@@ -1,7 +1,6 @@
 import { Role } from "@prisma/client";
-import { Request } from "express";
 
-export interface AuthUser {
+interface AuthUser {
   id: string;
   role: Role;
 }

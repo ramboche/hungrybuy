@@ -1,50 +1,9 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { prisma } from "../lib/prisma";
 import { verifyOtp } from "../utils/otpStore";
 import { signJwt } from "../utils/jwt";
 import { TypedRequest } from "../types/request";
-import { LoginUserBody, RegisterUserBody } from "../validation/auth.schema";
-
-export async function registerUser(
-  req: TypedRequest<{}, RegisterUserBody, {}>,
-  res: Response,
-) {
-  try {
-    const { name, phone, otp } = req.body;
-
-    if (verifyOtp(phone, otp) === false) {
-      return res.status(401).json({ message: "Invalid OTP" });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: {
-        phone,
-      },
-    });
-
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    const newUser = await prisma.user.create({
-      data: {
-        name: name ?? "world",
-        phone,
-      },
-    });
-
-    const token = signJwt({ id: newUser.id, role: newUser.role });
-
-    return res.status(201).json({
-      message: "User created successfully",
-      data: { user: { name: newUser.name, phone: newUser.phone } },
-      token,
-    });
-  } catch (error) {
-    console.log("AUTH_REGISTER_ERROR:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-}
+import { LoginUserBody } from "../validation/auth.schema";
 
 export async function loginUser(
   req: TypedRequest<{}, LoginUserBody, {}>,
@@ -53,18 +12,23 @@ export async function loginUser(
   try {
     const { phone, otp } = req.body;
 
-    const user = await prisma.user.findUnique({
+    if (verifyOtp(phone, otp) === false) {
+      return res.status(401).json({ message: "Invalid OTP" });
+    }
+
+    let user = await prisma.user.findUnique({
       where: {
         phone,
       },
     });
 
     if (!user) {
-      return registerUser(req, res);
-    }
-
-    if (verifyOtp(phone, otp) === false) {
-      return res.status(401).json({ message: "Invalid OTP" });
+      user = await prisma.user.create({
+        data: {
+          name: "world",
+          phone,
+        },
+      });
     }
 
     const token = signJwt({ id: user.id, role: user.role });

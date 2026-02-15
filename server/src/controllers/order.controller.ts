@@ -133,12 +133,12 @@ export async function createOrder(req: TypedRequest, res: Response) {
           price: unitPrice,
           menuItem: {
             connect: { id: item.menuItemId },
-            ...(item.variant && {
-              variant: {
-                connect: { id: item.variantId },
-              },
-            }),
           },
+          ...(item.variantId && {
+            variant: {
+              connect: { id: item.variantId },
+            },
+          }),
         };
       });
 

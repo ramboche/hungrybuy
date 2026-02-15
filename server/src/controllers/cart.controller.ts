@@ -83,6 +83,10 @@ export async function addToCart(
       const updatedCart = await prisma.cartItem.update({
         where: { id: cartItem.id },
         data: { quantity },
+        include: {
+          menuItem: true,
+          variant: true,
+        },
       });
 
       return res
@@ -96,6 +100,10 @@ export async function addToCart(
         menuItemId,
         variantId: variantId ?? null,
         quantity,
+      },
+      include: {
+        menuItem: true,
+        variant: true,
       },
     });
 

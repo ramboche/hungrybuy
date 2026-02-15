@@ -148,13 +148,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ? existingItem.quantity + quantity
         : quantity;
 
-      await api.post(`/cart/add`, {
+      const updatedCart = await api.post(`/cart/add`, {
         menuItemId,
         variantId,
         quantity: finalQuantity,
       });
 
-      await fetchCart();
+      setCart(updatedCart.data.data.cart);
       toast.success("Added to cart!");
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;

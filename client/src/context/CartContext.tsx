@@ -148,13 +148,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ? existingItem.quantity + quantity
         : quantity;
 
-      const updatedCart = await api.post(`/cart/add`, {
+      const res = await api.post(`/cart/add`, {
         menuItemId,
         variantId,
         quantity: finalQuantity,
       });
 
-      setCart(updatedCart.data.data.cart);
+      const receivedItem: CartItem = res.data.data.item;
+
+      setCart((prevCart) => {
+        const existingIndex = prevCart.findIndex(item => item.id === receivedItem.id);
+
+        if (existingIndex > -1) {
+          const newCart = [...prevCart];
+          newCart[existingIndex] = receivedItem;
+          return newCart;
+        } else {
+          return [...prevCart, receivedItem];
+        }
+      });
+      
       toast.success("Added to cart!");
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;

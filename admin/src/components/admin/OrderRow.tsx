@@ -11,7 +11,6 @@ export default function OrderRow({ order, tableNumber, onStatusClick }: OrderRow
 
   const totalAmount = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  // 1. Updated for new Enums
   const getStatusStyle = (status: OrderStatus) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
@@ -32,7 +31,6 @@ export default function OrderRow({ order, tableNumber, onStatusClick }: OrderRow
     }
   };
 
-  // 2. Format ISO String to Time (e.g., "12:30 PM")
   const formatTime = (isoString: string) => {
     if (!isoString) return '--:--';
     return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

@@ -14,10 +14,8 @@ export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   
-  // Select data from Redux Store
   const { isLoading, error, isAuthenticated } = useSelector((state: RootState) => state.auth);
 
-  // If already logged in, redirect to Home/Dashboard
   useEffect(() => {
     if (isAuthenticated) {
       router.push('/');

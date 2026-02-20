@@ -25,7 +25,6 @@ export default function ManageCategoriesModal({ isOpen, onClose, categories, onA
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      {/* Changed z-60 to z-50 to match other modals */}
       <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[80vh]">
         
         {/* Header */}
@@ -46,7 +45,7 @@ export default function ManageCategoriesModal({ isOpen, onClose, categories, onA
               className="flex-1 h-11 rounded-xl border border-gray-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red transition-all"
               value={newCatName}
               onChange={(e) => setNewCatName(e.target.value)}
-              autoFocus // Auto focus for better UX
+              autoFocus 
             />
             <button 
               type="submit"
@@ -68,7 +67,6 @@ export default function ManageCategoriesModal({ isOpen, onClose, categories, onA
                categories.map((cat) => (
                  <div key={cat.id} className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm group hover:border-brand-red/30 transition-colors">
                     <div className="flex items-center gap-3">
-                       {/* Replaced Drag Handle with Hash since we sort alphabetically */}
                        <div className="p-2 bg-gray-50 rounded-lg text-gray-400">
                          <Hash size={14} />
                        </div>

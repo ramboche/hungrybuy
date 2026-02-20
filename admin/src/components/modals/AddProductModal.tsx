@@ -18,7 +18,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
   // --- Form State ---
   const [formData, setFormData] = useState({
     name: '',
-    price: '',      
+    price: '',
     category: '',
     description: '',
     image: '',
@@ -30,8 +30,8 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
   const [variants, setVariants] = useState<{ id?: string; label: string; price: string }[]>([]);
   const [preview, setPreview] = useState<string>('');
 
-  const imageUrl = initialData?.image 
-    ? `${process.env.NEXT_PUBLIC_API_URL}${initialData.image}` 
+  const imageUrl = initialData?.image
+    ? `${process.env.NEXT_PUBLIC_API_URL}${initialData.image}`
     : null;
 
 
@@ -39,11 +39,11 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isOpen) {
-        setImageFile(null); 
+        setImageFile(null);
         if (initialData) {
           setFormData({
             name: initialData.name,
-            price: initialData.price ? (initialData.price / 100).toFixed(2) : '', 
+            price: initialData.price ? (initialData.price / 100).toFixed(2) : '',
             category: initialData.categoryId,
             description: initialData.description || '',
             image: initialData.image || '',
@@ -80,7 +80,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
 
     return () => clearTimeout(timer);
 
-  }, [initialData, isOpen, categories]);
+  }, [initialData, isOpen, categories, imageUrl]);
 
   // --- Handlers ---
 
@@ -115,7 +115,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
     const priceInCents = Math.round(parseFloat(safePrice) * 100);
 
     const formattedVariants = variants
-      .filter(v => v.label && v.price) 
+      .filter(v => v.label && v.price)
       .map(v => ({
         id: v.id,
         label: v.label,
@@ -129,7 +129,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
     data.append('categoryId', formData.category);
     data.append('foodType', formData.foodType);
     data.append('isAvailable', String(formData.inStock));
-    
+
     if (imageFile) {
       data.append('image', imageFile);
     }
@@ -164,7 +164,6 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
               <label className="block text-xs font-bold text-gray-900 mb-2">Item Image</label>
               <div className="relative w-full h-40 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 flex flex-col items-center justify-center text-gray-400 hover:border-brand-red/50 hover:bg-red-50/10 transition-colors overflow-hidden group">
                 {preview ? (
-                  /* The parent MUST have 'relative' for the fill prop to work */
                   <div className="relative w-full h-full">
                     <Image
                       src={preview}
@@ -172,7 +171,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      unoptimized={true} 
+                      unoptimized={true}
                     />
                   </div>
                 ) : (

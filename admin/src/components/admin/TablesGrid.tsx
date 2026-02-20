@@ -1,8 +1,8 @@
 import { Plus, Trash2, QrCode } from 'lucide-react';
-import { Table, Order } from '@/lib/types'; // Import updated types
+import { Table, Order } from '@/lib/types'; 
 
 interface TablesGridProps {
-  tables: Table[]; // Changed from string[] to Table[]
+  tables: Table[]; 
   activeOrders: Order[];
   onAddClick: () => void;
   onDeleteTable: (id: string) => void;
@@ -11,20 +11,15 @@ interface TablesGridProps {
 
 export default function TablesGrid({ tables, activeOrders, onAddClick, onDeleteTable, onQrClick }: TablesGridProps) {
 
-  // Helper to format number (1 -> "01")
   const formatTableNum = (num: number) => num?.toString().padStart(2, '0');
 
-  // Helper to check status (this logic might need adjusting depending on how you link orders to tables now)
   const getTableStatus = (tableNum: number) => {
-    // Assuming Order has tableId as a string matching the number "01", "02" etc.
-    // You might need to update this logic if Order.tableId becomes a UUID.
     const isActive = activeOrders.some(o => o.tableId === formatTableNum(tableNum) && o.status !== 'PAID');
     return isActive ? 'Occupied' : 'Available';
   };
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {/* Add Button */}
       <button
         onClick={onAddClick}
         className="aspect-square rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-brand-red hover:text-brand-red hover:bg-red-50 transition-all group"
@@ -35,7 +30,6 @@ export default function TablesGrid({ tables, activeOrders, onAddClick, onDeleteT
         <span className="font-bold text-sm">Add Table</span>
       </button>
 
-      {/* Table Cards */}
       {tables.map((table) => (
         <div key={table.id || table.number} className="aspect-square bg-white rounded-3xl p-4 shadow-sm border border-gray-100 relative group flex flex-col justify-between">
 

@@ -26,7 +26,6 @@ export default function QrCodeModal({ isOpen, onClose, table }: Props) {
           responseType: 'blob',
         });
 
-        // Create URL and update state
         const url = URL.createObjectURL(response.data);
         setImageUrl(url);
       } catch (error) {
@@ -36,12 +35,10 @@ export default function QrCodeModal({ isOpen, onClose, table }: Props) {
       }
     };
 
-    // 2. Logic Flow
     if (isOpen && table) {
       fetchQrCode();
     }
 
-    // 3. CLEANUP FUNCTION (Runs on unmount OR before re-running)
     return () => {
       setImageUrl((prevUrl) => {
         if (prevUrl) URL.revokeObjectURL(prevUrl);

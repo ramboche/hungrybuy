@@ -8,7 +8,7 @@ import Image from 'next/image';
 
 interface Props {
   order: Order;
-  tableNumber: string | number; // <--- NEW PROP (Pass this from parent)
+  tableNumber: string | number; 
   onBack: () => void;
   onComplete: () => void;
 }
@@ -40,7 +40,7 @@ export default function OrderDetailsView({ order, tableNumber, onBack, onComplet
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-[100] bg-white flex flex-col shadow-2xl"
+      className="fixed inset-0 z-100 bg-white flex flex-col shadow-2xl"
     >
 
       {/* Header */}
@@ -71,7 +71,6 @@ export default function OrderDetailsView({ order, tableNumber, onBack, onComplet
             </span>
           </div>
           <div className="relative z-10">
-            {/* Use prop instead of raw UUID */}
             <h1 className="text-3xl font-extrabold">Table {tableNumber}</h1>
             <p className="text-gray-400 text-sm mt-1">Dine-in • {order.items.length} Items</p>
           </div>
@@ -80,7 +79,6 @@ export default function OrderDetailsView({ order, tableNumber, onBack, onComplet
         {/* Items */}
         <h3 className="font-bold text-gray-900 mb-4 text-sm">Order Items</h3>
         <div className="space-y-4 mb-8">
-          {/* Changed order.orders -> order.items */}
           {order.items.map((item) => (
             <div key={item.id} className="flex gap-4 p-3 rounded-2xl border border-gray-100 bg-white shadow-sm">
               <div className="relative w-16 h-16 shrink-0 bg-gray-100 rounded-xl overflow-hidden">
@@ -92,7 +90,6 @@ export default function OrderDetailsView({ order, tableNumber, onBack, onComplet
                   sizes="64px"
                 />
 
-                {/* Badge needs z-10 to stay on top of the image */}
                 <span className="absolute z-10 right-0 w-5 h-5 bg-brand-red text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
                   {item.quantity}
                 </span>
@@ -100,7 +97,6 @@ export default function OrderDetailsView({ order, tableNumber, onBack, onComplet
               <div className="flex-1 min-w-0 flex flex-col justify-center">
                 <div className="flex justify-between items-start">
                   <h4 className="font-bold text-gray-900 text-sm line-clamp-1">{item.menuItem?.name}</h4>
-                  {/* Calculate Price: (Item Price * Qty) / 100 */}
                   <span className="font-bold text-gray-900 text-sm">
                     ${formatPrice(item.price * item.quantity)}
                   </span>
@@ -134,7 +130,6 @@ export default function OrderDetailsView({ order, tableNumber, onBack, onComplet
 
           <div className="flex justify-between text-lg font-extrabold text-brand-red">
             <span>Total</span>
-            {/* Calculated Total */}
             <span>${formatPrice(calculateTotal())}</span>
           </div>
         </div>

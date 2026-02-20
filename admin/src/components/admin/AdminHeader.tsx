@@ -15,12 +15,10 @@ export default function AdminHeader({ onLogout }: AdminHeaderProps) {
       </div>
 
       <div className="flex items-center gap-6">
-        {/* Notification */}
         <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
           <Bell size={22} className="text-gray-600" />
           <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-brand-red rounded-full border-2 border-white"></span>
         </button>
-        {/* Profile */}
         <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-brand-red font-bold border-2 border-white shadow-sm">
           M
         </div>

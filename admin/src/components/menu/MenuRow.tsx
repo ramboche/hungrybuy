@@ -35,7 +35,7 @@ export default function MenuRow({ product, onEdit, onDelete }: Props) {
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
           <h3 className="font-bold text-gray-900 truncate">{product.name}</h3>
-          <span className="font-bold text-brand-red text-lg">${product.price ? (product.price / 100).toFixed(2) : '0.00'}</span>
+          <span className="font-bold text-brand-red text-lg">${product.price ? (product.price) : '0.00'}</span>
         </div>
 
         <div className="flex items-center gap-2 mt-2">

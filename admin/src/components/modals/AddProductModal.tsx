@@ -10,7 +10,6 @@ interface Props {
   onClose: () => void;
   categories: Category[];
   initialData?: Product | null;
-  // Updated onSave signature to match Backend requirements
   onSave: (formData: FormData, variants: { id?: string; label: string; price: number }[]) => void;
 }
 
@@ -43,7 +42,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
         if (initialData) {
           setFormData({
             name: initialData.name,
-            price: initialData.price ? (initialData.price / 100).toFixed(2) : '',
+            price: initialData.price ? String(initialData.price) : '',
             category: initialData.categoryId,
             description: initialData.description || '',
             image: initialData.image || '',
@@ -112,7 +111,6 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
     e.preventDefault();
 
     const safePrice = formData.price === '' ? '0' : formData.price;
-    const priceInCents = Math.round(parseFloat(safePrice) * 100);
 
     const formattedVariants = variants
       .filter(v => v.label && v.price)
@@ -125,7 +123,7 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
     const data = new FormData();
     data.append('name', formData.name);
     data.append('description', formData.description);
-    data.append('price', String(priceInCents));
+    data.append('price', String(safePrice));
     data.append('categoryId', formData.category);
     data.append('foodType', formData.foodType);
     data.append('isAvailable', String(formData.inStock));

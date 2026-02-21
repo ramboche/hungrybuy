@@ -19,19 +19,17 @@ import Section from "@/components/layout/Section";
 import { ArrowLeft } from "lucide-react";
 
 export default function Home() {
-
-
   const router = useRouter();
   const { isLoading, user } = useAuth();
   const { handleAuthError } = useApiAuthError();
 
   const [isViewAll, setIsViewAll] = useState(false);
+
+  // --- NEW STATES FOR FETCHING ---
   const [isFullMenuLoaded, setIsFullMenuLoaded] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  const [dietFilter, setDietFilter] = useState<"all" | "veg" | "non-veg">(
-    "all",
-  );
+  const [dietFilter, setDietFilter] = useState<"all" | "veg" | "non-veg">("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -50,6 +48,7 @@ export default function Home() {
     }
   }, [isLoading, user, router]);
 
+  // --- REFACTORED FETCH MENU FUNCTION ---
   const fetchMenu = useCallback(async (fetchAll: boolean) => {
     try {
       if (fetchAll) {
@@ -58,6 +57,7 @@ export default function Home() {
         setIsMenuLoading(true);
       }
 
+      // 1. Pass a limit query parameter for the initial load
       const endpoint = fetchAll ? "/menu" : "/menu?limit=5";
       const res = await api.get(endpoint);
       const dbProducts = res.data.data.items;
@@ -65,11 +65,11 @@ export default function Home() {
       const readyProducts = dbProducts.map((p: Product) => ({
         ...p,
         image: "/images/burgers.jpeg",
-        qty: 42,
+        qty: 42, // Ensure this matches your actual schema needs
       }));
 
       setProducts(readyProducts);
-
+      
       if (fetchAll) {
         setIsFullMenuLoaded(true);
       }
@@ -81,27 +81,24 @@ export default function Home() {
     }
   }, [handleAuthError]);
 
+  // --- INITIAL LOAD ---
   useEffect(() => {
     if (!user) return;
-
-
 
     const fetchCategoreies = async () => {
       try {
         const res = await api.get("/categories");
-        const dbCategories: Category[] = res.data.data.categories;
-        setCategories(dbCategories);
-
+        setCategories(res.data.data.categories);
       } catch (error) {
         handleAuthError(error, "Failed to load categories");
       }
-    }
+    };
 
-    fetchMenu(false);
+    fetchMenu(false); // Fetch only featured items first
     fetchCategoreies();
-
   }, [user, fetchMenu, handleAuthError]);
 
+  // --- TRIGGER FULL LOAD WHEN 'SEE ALL' IS CLICKED ---
   useEffect(() => {
     if (isViewAll && !isFullMenuLoaded && user) {
       fetchMenu(true);
@@ -175,8 +172,7 @@ export default function Home() {
     }
   };
 
-
-  // --- 2. Updated Filter Logic ---
+  // --- Filter Logic ---
   const filteredProducts = products.filter((product) => {
     const targetFoodType = dietFilter === "veg" ? "VEG" : "NON_VEG";
 
@@ -199,9 +195,7 @@ export default function Home() {
         <QRHandler />
       </Suspense>
 
-      <div
-        className={`flex-1 overflow-y-auto scrollbar-hide pb-24 h-full flex flex-col`}
-      >
+      <div className={`flex-1 overflow-y-auto scrollbar-hide pb-24 h-full flex flex-col`}>
         <div className="px-4 shrink-0 sticky top-0 z-20 bg-brand-bg">
           <Header
             cartCount={getTotalCartCount()}
@@ -210,15 +204,14 @@ export default function Home() {
             onSearchChange={setSearchQuery}
             onSearchFocus={() => setIsViewAll(true)}
           />
-
         </div>
+        
         <div className="px-4 shrink-0">
           {!isViewAll && (
             <div>
               <DietFilter activeFilter={dietFilter} onFilterChange={setDietFilter} />
             </div>
           )}
-
 
           {isViewAll && (
             <div className="flex items-center gap-2 mb-2">
@@ -252,7 +245,8 @@ export default function Home() {
             />
             <div className={isViewAll ? "pb-safe min-h-screen" : ""}>
               <FeaturedProducts
-                products={filteredProducts}
+                // We slice it here as a safety net just in case the backend ignores the ?limit=5 parameter
+                products={isViewAll ? filteredProducts : filteredProducts.slice(0, 5)}
                 isLoading={isMenuLoading || isFetchingMore}
                 getProductTotalQty={getProductTotalQty}
                 onAddClick={handleCardAddClick}
@@ -279,8 +273,7 @@ export default function Home() {
               .filter((i) => i.menuItem.id === selectedProduct.id)
               .reduce(
                 (acc, item) => {
-                  if (item.variant)
-                    acc[item.variant.label] = item.quantity;
+                  if (item.variant) acc[item.variant.label] = item.quantity;
                   return acc;
                 },
                 {} as Record<string, number>,

@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import Image from 'next/image';
 import { Product } from '@/lib/types';
 import QuantityBtn from './QuantityButton';
-import { useState } from 'react'; // REMOVED useEffect
+import { useState } from 'react';
 
 interface Props {
   product: Product | null;
@@ -15,9 +15,7 @@ interface Props {
 }
 
 export default function ProductDialog({ product, isOpen, onClose, initialData, onSave }: Props) {
-  
-  // FIX: Initialize state directly with initialData. 
-  // Because of the 'key' in page.tsx, this runs fresh every time the dialog opens.
+
   const [quantities, setQuantities] = useState<Record<string, number>>(initialData || {});
 
   if (!isOpen || !product) return null;
@@ -75,7 +73,7 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
             <div key={size.label} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
               <div>
                 <span className="font-semibold text-sm sm:text-base text-brand-dark block">{size.label}</span>
-                <span className="text-brand-red font-bold text-sm sm:text-base">$ {(size.price / 100).toFixed(2)}</span>
+                <span className="text-brand-red font-bold text-sm sm:text-base">$ {(size.price)}</span>
               </div>
               <QuantityBtn
                 count={quantities[size.label] || 0}

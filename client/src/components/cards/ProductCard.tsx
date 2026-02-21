@@ -21,8 +21,8 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
   const handleCounterDecrease = hasSizes ? onAddClick : onDecrease;
 
   const displayPrice = hasSizes
-    ? (Math.min(...product.variants!.map(s => s.price)) / 100)
-    : (product.price) / 100;
+    ? (Math.min(...product.variants!.map(s => s.price)))
+    : (product.price);
 
   return (
     <div className="group bg-white rounded-3xl p-3 flex gap-3 sm:gap-4 shadow-sm hover:shadow-lg transition-all duration-300 w-full min-h-35">
@@ -56,7 +56,7 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
               {hasSizes ? 'Starts from' : 'Price'}
             </span>
             <span className="text-brand-red font-bold text-lg">
-              $ {displayPrice.toFixed(2)}
+              $ {displayPrice}
             </span>
           </div>
 

@@ -24,6 +24,7 @@ type MenuItem = {
   name: string;
   price: number | null;
   isAvailable: boolean;
+  image?: string | null;
   categoryId: string;
   variants?: Variant[];
 };
@@ -88,6 +89,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setTableTokenState(token);
     setTableNo(no);
     localStorage.setItem("table", JSON.stringify({ token, no }));
+    updateApiToken(token);
     fetchCart();
   };
 
@@ -100,8 +102,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       const tableToken = resolvedTable.tableToken;
       const tableNo = resolvedTable.tableNumber;
-
-      console.log(resolvedTable);
 
       if (tableToken && tableNo) {
         setTable({ token: tableToken, no: tableNo });

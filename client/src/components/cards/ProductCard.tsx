@@ -24,6 +24,10 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
     ? (Math.min(...product.variants!.map(s => s.price)))
     : (product.price);
 
+  const imageUrl = product.image
+    ? `${process.env.NEXT_PUBLIC_API_URL}${product.image}`
+    : null;
+
   return (
     <div className="group bg-white rounded-3xl p-3 flex gap-3 sm:gap-4 shadow-sm hover:shadow-lg transition-all duration-300 w-full min-h-35">
 
@@ -31,11 +35,12 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
         <div className="w-full h-full rounded-2xl overflow-hidden relative bg-gray-100">
           <RatingBadge rating={product.rating!} />
           <Image
-            src={product.image!}
+            src={imageUrl || '/placeholder.png'}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="(max-width: 640px) 112px, 128px"
+            unoptimized={true}
           />
         </div>
       </div>

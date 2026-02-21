@@ -12,7 +12,7 @@ import { useState, useEffect, Suspense, useCallback } from "react";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 import QRHandler from "@/components/auth/QRHandler";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useApiAuthError } from "@/hooks/useApiAuthError";
 import Section from "@/components/layout/Section";
@@ -20,6 +20,8 @@ import { ArrowLeft } from "lucide-react";
 
 export default function Home() {
 
+  const searchParams = useSearchParams();
+  const tableParam = searchParams.get("table");
 
   const router = useRouter();
   const { isLoading, user } = useAuth();
@@ -39,16 +41,31 @@ export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isMenuLoading, setIsMenuLoading] = useState(true);
 
-  const { cart, addToCart, updateQuantity } = useCart();
+  const { cart, addToCart, updateQuantity, resolveTableFromToken } = useCart();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     if (!isLoading && !user) {
+      if (tableParam) {
+        localStorage.setItem("pending_table_scan", tableParam);
+      }
       router.push("/login");
     }
-  }, [isLoading, user, router]);
+  }, [isLoading, user, router, tableParam]);
+
+  useEffect(() => {
+    if (user) {
+      const pendingTable = localStorage.getItem("pending_table_scan");
+      
+      if (pendingTable) {
+        resolveTableFromToken(pendingTable);
+        localStorage.removeItem("pending_table_scan");
+        router.replace("/");
+      }
+    }
+  }, [user, resolveTableFromToken, router]);
 
   const fetchMenu = useCallback(async (fetchAll: boolean) => {
     try {
@@ -64,7 +81,6 @@ export default function Home() {
 
       const readyProducts = dbProducts.map((p: Product) => ({
         ...p,
-        image: "/images/burgers.jpeg",
         qty: 42,
       }));
 

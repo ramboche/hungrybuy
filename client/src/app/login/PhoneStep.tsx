@@ -5,7 +5,7 @@ import { motion, Transition } from "framer-motion";
 import { ArrowRight, Loader2, Heart } from "lucide-react";
 import Image from "next/image";
 
-// === Animation Variants (Unchanged) ===
+// === Animation Variants ===
 const slideVariants = {
     enter: (direction: number) => ({
         x: direction > 0 ? "100%" : "-100%",
@@ -35,10 +35,8 @@ export default function PhoneStep({
 }) {
     const [phone, setPhone] = useState("");
 
-    // 1. Create a Ref for the input
     const phoneInputRef = useRef<HTMLInputElement>(null);
 
-    // 2. Focus on mount (with small delay for animation)
     useEffect(() => {
         const timer = setTimeout(() => {
             phoneInputRef.current?.focus();
@@ -62,10 +60,9 @@ export default function PhoneStep({
             transition={transitionSpec}
         >
             <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col">
-                {/* ... (Images and Header - Unchanged) ... */}
                 <div className="flex justify-center mt-6 mb-6 md:mt-10 md:mb-8 relative shrink-0">
                     <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-white shadow-lg flex items-center justify-center overflow-hidden relative z-10 p-1">
-                        <div className="relative w-full h-full"> {/* Parent MUST be relative */}
+                        <div className="relative w-full h-full"> 
                             <Image
                                 src="/images/burgers.jpeg"
                                 alt="Burger"
@@ -95,7 +92,7 @@ export default function PhoneStep({
                     </label>
                     <div className="relative flex items-center mb-6">
                         <input
-                            ref={phoneInputRef} // 3. Attach the Ref here
+                            ref={phoneInputRef}
                             type="tel"
                             placeholder="000-000-0000"
                             maxLength={10}

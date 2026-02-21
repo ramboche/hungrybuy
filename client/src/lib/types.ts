@@ -2,12 +2,12 @@ export interface Category {
   id: string;
   name: string;
   image: string;
-  color?: string; // For the circle bg
+  color?: string; 
 }
 
 export interface Variant {
   id: string;
-  label: string; // Matches DB
+  label: string; 
   price: number;
 }
 
@@ -15,12 +15,10 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  price: number;       // Now this expects Integers (cents) from DB
-  foodType: 'VEG' | 'NON_VEG'; // Matches DB Enum
+  price: number;    
+  foodType: 'VEG' | 'NON_VEG';
   categoryId: string;
-  variants: Variant[]; // Matches DB relation name
-  
-  // These fields are NOT in DB yet, so we make them optional or handle them
+  variants: Variant[]; 
   image?: string; 
   rating?: number;
   qty?: number;
@@ -32,12 +30,13 @@ export interface BackendCartItem {
   menuItem: {
     id: string;
     name: string;
-    price: number | null; // Expecting Integers (e.g., 799 for $7.99)
+    price: number | null;
+    image?: string | null;
   };
   variant?: {
     id: string;
     label: string;
-    price: number; // Expecting Integers
+    price: number; 
   } | null;
 }
 

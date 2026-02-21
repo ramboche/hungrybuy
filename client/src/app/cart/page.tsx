@@ -1,6 +1,6 @@
 "use client";
 
-import CartPage from "@/components/ui/CartPage";
+import CartPage from "@/components/cart/CartPage";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";

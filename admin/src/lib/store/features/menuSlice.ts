@@ -139,16 +139,12 @@ const menuSlice = createSlice({
                 state.isLoading = false;
                 state.products = action.payload.map((p: Product) => ({
                     ...p,
-                    // image: '/burgers.jpeg'
                 }));
             })
             .addCase(deleteProduct.fulfilled, (state, action) => {
                 state.products = state.products.filter(p => p.id !== action.payload);
             })
-            // Update is mostly handled by fetchProducts dispatch now, 
-            // but we can leave this for optimistic UI updates if needed later.
             .addCase(updateProduct.fulfilled, () => {
-                // The fetchProducts dispatch inside the thunk will handle the actual data refresh
             });
     },
 });

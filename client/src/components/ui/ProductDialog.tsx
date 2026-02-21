@@ -37,6 +37,10 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
     onClose();
   };
 
+  const imageUrl = product.image
+    ? `${process.env.NEXT_PUBLIC_API_URL}${product.image}`
+    : null;
+
   const sizeList = product.variants || [];
 
   return (
@@ -50,8 +54,8 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
           <div className="flex justify-between items-start">
             <div className="flex gap-4">
               <div className="w-16 h-16 relative rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
-                {product.image && product.image.trim() !== "" ? (
-                  <Image src={product.image} alt={product.name} fill className="object-cover" />
+                {imageUrl ? (
+                  <Image src={imageUrl || '/placeholder.png'} alt={product.name} fill className="object-cover" unoptimized={true} />
                 ) : (
                   <div className="w-full h-full bg-gray-200" />
                 )}

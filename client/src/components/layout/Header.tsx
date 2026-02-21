@@ -16,22 +16,26 @@ interface HeaderProps {
 export default function Header({ cartCount = 0, onCartClick, searchQuery, onSearchChange , onSearchFocus}: HeaderProps) {
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const { tableToken, tableNo } = useCart();
+  const { tableToken, tableNo, resolveTableFromToken } = useCart();
 
-  const handleScan = (scannedUrl: string) => {
+  const handleScan = async (scannedUrl: string) => { 
     try {
-      let scannedTableId = '';
+      let qrToken = '';
 
       if (scannedUrl.startsWith('http')) {
         const urlObj = new URL(scannedUrl);
-        scannedTableId = urlObj.searchParams.get('table') || '';
+        qrToken = urlObj.searchParams.get('table') || '';
       } else {
-        scannedTableId = scannedUrl;
+        qrToken = scannedUrl;
       }
 
-      if (scannedTableId) {
+      console.log(qrToken);
+
+      if (qrToken) {
         setIsScannerOpen(false);
-        window.location.href = `/?table=${scannedTableId}`;
+      
+        await resolveTableFromToken(qrToken);
+        
       } else {
         alert("Invalid QR Code. Please scan a valid table code.");
       }

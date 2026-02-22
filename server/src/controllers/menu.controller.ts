@@ -16,12 +16,20 @@ import {
   UpdateVariantBody,
   UpdateVariantParams,
 } from "../validation/menu.schema";
+import { getCache, setCache } from "../utils/cache";
 
-export async function getMenu(
-  req: TypedRequest<{}, {}, GetMenuQuery>,
-  res: Response,
-) {
+export async function getMenu(req: TypedRequest<{}, {}, {}>, res: Response) {
   try {
+    const parsedQuery = GetMenuQuery.parse(req.query);
+
+    const queryKey = JSON.stringify(parsedQuery);
+    const cacheKey = `menu:${queryKey}`;
+
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.status(200).json(cached);
+    }
+
     const {
       categoryId,
       foodType,
@@ -32,7 +40,7 @@ export async function getMenu(
       sortOrder,
       minRating,
       includeUnavailable,
-    } = req.query;
+    } = parsedQuery;
 
     const isAdminOrShop: boolean =
       req.user?.role === "ADMIN" || req.user?.role === "SHOP";
@@ -89,7 +97,7 @@ export async function getMenu(
       nextCursor = nextItem!.id;
     }
 
-    return res.status(200).json({
+    const responsePayload = {
       message: "Fetched all menu items",
       data: {
         items,
@@ -98,7 +106,13 @@ export async function getMenu(
           hasNextPage: !!nextCursor,
         },
       },
-    });
+    };
+
+    if (!isAdminOrShop) {
+      await setCache(cacheKey, responsePayload, 60);
+    }
+
+    return res.status(200).json(responsePayload);
   } catch (error) {
     console.log("MENU_GET_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });

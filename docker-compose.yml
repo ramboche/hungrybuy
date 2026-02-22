@@ -6,10 +6,24 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
-      - pghungrybuy:/var/lib/postgresql/data/
+      - pghungrybuy:/var/lib/postgresql/data/4
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    container_name: hungrybuy-redis
+    command: >
+      sh -c "
+      --appendonly yes
+      --maxmemory ${REDIS_MAX_MEMORY}
+      --maxmemory-policy ${REDIS_MAX_MEMORY_POLICY}
+      --requirepass ${REDIS_PASSWORD}"
+    volumes:
+      - redisdata:/data
+    networks:
+      - app-network
 
   server:
     build:
@@ -21,6 +35,8 @@ services:
       - postgres
     ports:
       - "5000:5000"
+    networks:
+      - app-network
 
   client:
     build:
@@ -32,6 +48,8 @@ services:
       - server
     ports:
       - "3000:3000"
+    networks:
+      - app-network
 
   admin:
     build:
@@ -43,7 +61,17 @@ services:
       - server
     ports:
       - "8000:3000"
+    networks:
+      - app-network
 
 volumes:
   pghungrybuy:
     name: hungrybuy
+  redisdata:
+    name: hungryredis
+
+networks:
+  app-network:
+    name: hungrybuy-net
+    driver: bridge
+    internal: true

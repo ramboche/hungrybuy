@@ -13,6 +13,22 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:7
+    container_name: hungrybuy-redis
+    command: >
+      sh -c "
+      --appendonly yes
+      --maxmemory ${REDIS_MAX_MEMORY}
+      --maxmemory-policy ${REDIS_MAX_MEMORY_POLICY}
+      --requirepass ${REDIS_PASSWORD}"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - app-network
+
   server:
     build:
       context: ./server
@@ -72,6 +88,8 @@ services:
 volumes:
   pghungrybuy:
     name: hungrybuy
+  redisdata:
+    name: hungryredis
 
 networks:
   app-network:

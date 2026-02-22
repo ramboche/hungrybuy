@@ -75,7 +75,7 @@ export default function Home() {
         setIsMenuLoading(true);
       }
 
-      const endpoint = fetchAll ? "/menu" : "/menu?limit=5";
+      const endpoint = fetchAll ? "/menu" : "/menu?limit=20";
       const res = await api.get(endpoint);
       const dbProducts = res.data.data.items;
 

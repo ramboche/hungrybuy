@@ -1,8 +1,9 @@
 import { NextFunction, Response } from "express";
-import { JwtPayload, verifyToken } from "../utils/jwt";
+import { JwtPayload, verifyAccessToken, verifyToken } from "../utils/jwt";
 import { TypedRequest } from "../types/request";
+import { getSession } from "../lib/session";
 
-export function attachUserMiddleware(
+export async function attachUserMiddleware(
   req: TypedRequest,
   _: Response,
   next: NextFunction,
@@ -18,10 +19,14 @@ export function attachUserMiddleware(
   }
 
   try {
-    const payload: JwtPayload = verifyToken(token);
+    const payload: JwtPayload = verifyAccessToken(token);
+
+    const session = await getSession(payload.sessionId);
+    if (!session) return next();
+
     req.user = {
-      id: payload.id,
-      role: payload.role,
+      id: session.userId,
+      role: session.role,
     };
   } catch (error) {
     console.log("AUTH_JWT_ERROR", error);

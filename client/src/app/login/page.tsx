@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { AxiosError } from 'axios';
+import { AxiosError } from "axios";
 import PhoneStep from "./PhoneStep";
 import OtpStep from "./OtpStep";
 
@@ -16,9 +16,9 @@ export default function LoginPage() {
   const [step, setStep] = useState<Step>("PHONE");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [direction, setDirection] = useState(0);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { login } = useAuth(); 
+  const { login } = useAuth();
 
   // --- INTEGRATION: Handle Step 1 (Send OTP)
   const handleSendOtp = async (phone: string) => {
@@ -52,31 +52,14 @@ export default function LoginPage() {
     try {
       const res = await api.post("/auth/login", { phone: phoneNumber, otp });
 
-      const { token, data } = res.data;
-      login(token, data.user);
+      const { accessToken, refreshToken, data } = res.data;
+      login(accessToken, refreshToken, data.user);
 
       toast.success("Login Successful!");
       router.push("/");
     } catch (error) {
-
       const err = error as AxiosError<{ message: string }>;
-      if (err.response?.status === 404) {
-        try {
-          const regRes = await api.post("/auth/register", {
-            phone: phoneNumber,
-            otp,
-            name: "New User",
-          });
-          const { token, data } = regRes.data;
-          login(token, data.user);
-          router.push("/");
-          toast.success("Account created!");
-        } catch {
-          toast.error("Registration failed.");
-        }
-      } else {
-        toast.error(err.response?.data?.message || "Invalid Code");
-      }
+      toast.error(err.response?.data?.message || "Invalid Code");
     } finally {
       setIsLoading(false);
     }
@@ -89,8 +72,8 @@ export default function LoginPage() {
           <PhoneStep
             key="phone"
             custom={direction}
-            onNext={handleSendOtp} 
-            isLoading={isLoading} 
+            onNext={handleSendOtp}
+            isLoading={isLoading}
           />
         )}
         {step === "OTP" && (
@@ -100,11 +83,10 @@ export default function LoginPage() {
             phoneNumber={phoneNumber}
             onBack={handleBack}
             onVerify={handleVerifyOtp}
-            isLoading={isLoading} 
+            isLoading={isLoading}
           />
         )}
       </AnimatePresence>
     </main>
   );
 }
-

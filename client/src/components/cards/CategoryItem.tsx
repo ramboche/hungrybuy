@@ -24,7 +24,7 @@ export default function CategoryItem({ name, image, isActive, onClick }: Props) 
           }
       `}>
          {(!image || image === "") && (
-           <div className={`relative z-10 text-xs font-bold ${isActive ? 'text-white' : 'text-brand-red'}`}>
+           <div className={`relative z-10 text-xs font-bold text-center px-1 ${isActive ? 'text-white' : 'text-brand-red'}`}>
              {name}
            </div>
          )}
@@ -39,7 +39,7 @@ export default function CategoryItem({ name, image, isActive, onClick }: Props) 
          )}
       </div>
       
-      <span className={`text-sm font-medium transition-colors ${isActive ? 'text-brand-red font-bold' : 'text-brand-dark'}`}>
+      <span className={`text-sm font-medium transition-colors text-center ${isActive ? 'text-brand-red font-bold' : 'text-brand-dark'}`}>
         {name}
       </span>
     </div>

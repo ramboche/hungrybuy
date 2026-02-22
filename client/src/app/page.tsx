@@ -8,7 +8,7 @@ import ProductDialog from "@/components/ui/ProductDialog";
 import DietFilter from "@/components/ui/DietFilter";
 import Loading from "@/components/other/Loading";
 import { Product, Category } from "@/lib/types";
-import { useState, useEffect, Suspense, useCallback } from "react";
+import { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 import QRHandler from "@/components/auth/QRHandler";
@@ -16,7 +16,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useApiAuthError } from "@/hooks/useApiAuthError";
 import Section from "@/components/layout/Section";
-import { ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
 
@@ -27,15 +27,19 @@ export default function Home() {
   const { isLoading, user } = useAuth();
   const { handleAuthError } = useApiAuthError();
 
-  const [isViewAll, setIsViewAll] = useState(false);
-  const [isFullMenuLoaded, setIsFullMenuLoaded] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(false);
+
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   const [dietFilter, setDietFilter] = useState<"all" | "veg" | "non-veg">(
     "all",
   );
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -58,7 +62,7 @@ export default function Home() {
   useEffect(() => {
     if (user) {
       const pendingTable = localStorage.getItem("pending_table_scan");
-      
+
       if (pendingTable) {
         resolveTableFromToken(pendingTable);
         localStorage.removeItem("pending_table_scan");
@@ -67,40 +71,98 @@ export default function Home() {
     }
   }, [user, resolveTableFromToken, router]);
 
-  const fetchMenu = useCallback(async (fetchAll: boolean) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchMenu = useCallback(async (isLoadMore: boolean = false, cursorToUse: string | null = null) => {
     try {
-      if (fetchAll) {
+      if (isLoadMore) {
         setIsFetchingMore(true);
       } else {
         setIsMenuLoading(true);
       }
 
-      const endpoint = fetchAll ? "/menu" : "/menu?limit=20";
+      const params = new URLSearchParams({ limit: "20" });
+
+      if (isLoadMore && cursorToUse) {
+        params.append("cursor", cursorToUse);
+      }
+
+      if (selectedCategory !== "all") {
+        params.append("categoryId", selectedCategory);
+      }
+
+      if (dietFilter !== "all") {
+        params.append("foodType", dietFilter === "veg" ? "VEG" : "NON_VEG");
+      }
+
+      if (debouncedSearchQuery.trim().length >= 2) {
+        params.append("search", debouncedSearchQuery.trim());
+      }
+
+      const endpoint = `/menu?${params.toString()}`;
       const res = await api.get(endpoint);
-      const dbProducts = res.data.data.items;
+      const data = res.data.data;
+      const dbProducts = data.items;
 
       const readyProducts = dbProducts.map((p: Product) => ({
         ...p,
         qty: 42,
       }));
 
-      setProducts(readyProducts);
-
-      if (fetchAll) {
-        setIsFullMenuLoaded(true);
+      if (isLoadMore) {
+        setProducts((prev) => [...prev, ...readyProducts]);
+      } else {
+        setProducts(readyProducts);
       }
+
+      setNextCursor(data.pagination.nextCursor);
+      setHasNextPage(data.pagination.hasNextPage);
+
     } catch (error) {
       handleAuthError(error, "Failed to load menu");
     } finally {
       setIsMenuLoading(false);
       setIsFetchingMore(false);
     }
-  }, [handleAuthError]);
+  }, [handleAuthError, selectedCategory, dietFilter, debouncedSearchQuery]);
 
   useEffect(() => {
     if (!user) return;
 
+    setNextCursor(null);
+    setHasNextPage(false);
 
+    fetchMenu(false, null);
+
+  }, [fetchMenu, user]);
+
+  useEffect(() => {
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingMore) {
+          fetchMenu(true, nextCursor);
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingMore, fetchMenu, nextCursor]);
+
+  useEffect(() => {
+
+    if (!user) return;
 
     const fetchCategoreies = async () => {
       try {
@@ -113,16 +175,9 @@ export default function Home() {
       }
     }
 
-    fetchMenu(false);
     fetchCategoreies();
 
-  }, [user, fetchMenu, handleAuthError]);
-
-  useEffect(() => {
-    if (isViewAll && !isFullMenuLoaded && user) {
-      fetchMenu(true);
-    }
-  }, [isViewAll, isFullMenuLoaded, user, fetchMenu]);
+  }, [user, handleAuthError]);
 
   if (isLoading) {
     return <Loading />;
@@ -191,23 +246,9 @@ export default function Home() {
     }
   };
 
-
-  // --- 2. Updated Filter Logic ---
-  const filteredProducts = products.filter((product) => {
-    const targetFoodType = dietFilter === "veg" ? "VEG" : "NON_VEG";
-
-    const matchesDiet =
-      dietFilter === "all" || product.foodType === targetFoodType;
-
-    const matchesCategory =
-      selectedCategory === "all" || product.categoryId === selectedCategory;
-
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    return matchesDiet && matchesCategory && matchesSearch;
-  });
+  const currentCategoryName = selectedCategory === "all"
+    ? "All Products"
+    : categories.find(c => c.id === selectedCategory)?.name || "Products";
 
   return (
     <main className="h-dvh w-full md:max-w-md md:mx-auto bg-brand-bg relative shadow-xl overflow-hidden">
@@ -224,52 +265,36 @@ export default function Home() {
             onCartClick={() => router.push("/cart")}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            onSearchFocus={() => setIsViewAll(true)}
           />
 
         </div>
         <div className="px-4 shrink-0">
-          {!isViewAll && (
-            <div>
-              <DietFilter activeFilter={dietFilter} onFilterChange={setDietFilter} />
-            </div>
-          )}
 
+          <div>
+            <DietFilter activeFilter={dietFilter} onFilterChange={setDietFilter} />
+          </div>
 
-          {isViewAll && (
-            <div className="flex items-center gap-2 mb-2">
-              <button
-                onClick={() => setIsViewAll(false)}
-                className="flex items-center gap-1 text-sm font-bold text-gray-500 hover:text-brand-red"
-              >
-                <ArrowLeft size={16} /> Back to Home
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="px-4 flex flex-col">
-          {!isViewAll && (
-            <Section className="mb-2">
-              <SectionTitle title="Categories" />
-              <Categories
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-              />
-            </Section>
-          )}
+          <Section className="mb-2">
+            <SectionTitle title="Categories" />
+            <Categories
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+            />
+          </Section>
+
 
           <Section>
             <SectionTitle
-              title={isViewAll ? "All Products" : "Featured Product"}
-              actionText={isViewAll ? "" : "See all"}
-              onActionClick={isViewAll ? undefined : () => setIsViewAll(true)}
+              title={currentCategoryName}
             />
-            <div className={isViewAll ? "pb-safe min-h-screen" : ""}>
+            <div className={"pb-safe min-h-screen"}>
               <FeaturedProducts
-                products={filteredProducts}
-                isLoading={isMenuLoading || isFetchingMore}
+                products={products}
+                isLoading={isMenuLoading}
                 getProductTotalQty={getProductTotalQty}
                 onAddClick={handleCardAddClick}
                 onIncrease={increaseSingleItem}
@@ -280,6 +305,13 @@ export default function Home() {
                   setSearchQuery("");
                 }}
               />
+
+              <div ref={observerTarget} className="w-full h-10 mt-4 flex justify-center items-center">
+                {isFetchingMore && (
+                  <Loader2 className="animate-spin text-brand-red" size={24} />
+                )}
+              </div>
+
             </div>
           </Section>
         </div>

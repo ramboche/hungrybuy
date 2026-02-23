@@ -5,6 +5,7 @@ import {
   CreateCategoryBody,
   DeleteCategoryParams,
 } from "../validation/category.schema";
+import { deleteFileByUrl } from "../utils/file";
 
 export async function getAllCategories(_: TypedRequest, res: Response) {
   try {
@@ -13,6 +14,7 @@ export async function getAllCategories(_: TypedRequest, res: Response) {
       select: {
         id: true,
         name: true,
+        image: true,
       },
     });
 
@@ -33,13 +35,20 @@ export async function createCategory(
     let { name } = req.body;
     name = name.trim().toLocaleLowerCase();
 
+    let image: string | null = null;
+    if (req.file) {
+      image = `/uploads/${req.file.filename}`;
+    }
+
     const newCategory = await prisma.category.create({
       data: {
         name,
+        image,
       },
       select: {
         id: true,
         name: true,
+        image: true,
       },
     });
 
@@ -64,26 +73,46 @@ export async function deleteCategory(
   try {
     const { id } = req.params;
 
-    const itemCount = await prisma.menuItem.count({
-      where: {
-        categoryId: id,
-      },
+    const deletedCategory = await prisma.$transaction(async (tx) => {
+      const itemCount = await tx.menuItem.count({
+        where: { categoryId: id },
+      });
+
+      if (itemCount > 0) {
+        throw new Error("HAS_ITEMS");
+      }
+
+      const item = await tx.category.delete({
+        where: { id },
+        select: { id: true, image: true },
+      });
+
+      return item;
     });
 
-    if (itemCount > 0) {
+    if (deletedCategory.image) {
+      deleteFileByUrl(deletedCategory.image);
+    }
+
+    return res.status(200).json({ message: "Category deleted successfully" });
+  } catch (error: any) {
+    if (error instanceof Error && error.message === "HAS_ITEMS") {
       return res
         .status(400)
         .json({ message: "Cannot delete category with items" });
     }
 
-    await prisma.category.delete({ where: { id } });
-    return res.status(200).json({ message: "Category deleted successfully" });
-  } catch (error: any) {
     if (error?.code === "P2025") {
-      return res.status(409).json({ message: "Category not found" });
+      return res.status(404).json({ message: "Category not found" });
     }
 
-    console.log("CATEGORY_DELETE_ERROR", error);
+    if (error?.code === "P2003") {
+      return res
+        .status(400)
+        .json({ message: "Cannot delete category with items" });
+    }
+
+    console.error("CATEGORY_DELETE_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }

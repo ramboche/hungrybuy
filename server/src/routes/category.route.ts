@@ -10,6 +10,7 @@ import {
   CreateCategoryBody,
   DeleteCategoryParams,
 } from "../validation/category.schema";
+import { upload } from "../utils/upload";
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.get("/", requireRole(["ADMIN", "SHOP", "USER"]), getAllCategories);
 router.post(
   "/create",
   requireRole(["ADMIN", "SHOP"]),
+  upload.single("image"),
   validate(CreateCategoryBody),
   createCategory,
 );
@@ -28,5 +30,5 @@ router.delete(
   validate(DeleteCategoryParams, "params"),
   deleteCategory,
 );
-  
+
 export default router;

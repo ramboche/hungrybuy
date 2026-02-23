@@ -75,8 +75,10 @@ model Table {
 }
 
 model Category {
-  id    String     @id @default(uuid())
-  name  String     @unique
+  id    String  @id @default(uuid())
+  name  String  @unique
+  image String?
+
   items MenuItem[]
 
   createdAt DateTime @default(now())

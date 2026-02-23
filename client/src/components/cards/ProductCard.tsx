@@ -29,7 +29,7 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
     : null;
 
   return (
-    <div className="group bg-white rounded-3xl p-2 flex flex-col gap-2 shadow-sm hover:shadow-md transition-all duration-300 w-full h-full">
+    <div className="group bg-white rounded-3xl p-2 flex flex-col shadow-sm hover:shadow-md transition-all duration-300 w-full h-full">
 
       <div className="relative w-full aspect-4/3 shrink-0 rounded-[20px] overflow-hidden bg-gray-50">
         <Image
@@ -46,45 +46,45 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
         </div>
       </div>
 
-      {/* Text & Action Container */}
-      <div className="flex flex-col flex-1 px-1 pb-1 justify-between">
-
-        {/* Title & Desc */}
-        <div className="mt-1 flex-1">
-          <h3 className="font-bold text-[14px] sm:text-[15px] text-brand-dark leading-tight line-clamp-1">
+      <div className="flex flex-row flex-1 px-1 pb-1 pt-2 gap-2 h-full">
+        {/* Left Side: Name and Price */}
+        <div className="flex flex-col flex-1 justify-between min-w-0">
+          <h3 className="font-bold text-[12px] text-brand-dark leading-snug">
             {product.name}
           </h3>
-          <p className="text-[10px] sm:text-[11px] text-gray-400 line-clamp-2 mt-1 leading-tight">
-            {product.description}
-          </p>
+          <div className="mt-auto">
+            <span className="text-brand-red font-bold text-[15px]">${displayPrice}</span>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-2 mt-auto"> 
-
-          <div className="flex items-center justify-between w-full">
-            <span className="text-brand-red font-bold text-[14px] sm:text-[16px] whitespace-nowrap">
-              ${displayPrice}
-            </span>
-
-            <div className="shrink-0">
-              {cartQty > 0 ? (
-                <div className="scale-[0.85]  max-w-full">
-                  <QuantityBtn
-                    count={cartQty}
-                    onIncrease={handleCounterClick}
-                    onDecrease={handleCounterDecrease}
-                  />
-                </div>
-              ) : (
-                <button
-                  onClick={onAddClick}
-                  className="w-8 h-8 rounded-full text-white flex items-center justify-center shadow-md active:scale-90 transition-transform bg-brand-red"
-                >
-                  <Plus size={16} strokeWidth={3} />
-                </button>
-              )}
-            </div>
+        {/* Right Side: The New Vertical Button */}
+        <div className="shrink-0 flex flex-col justify-end relative w-8">
+          <div className={`transition-all duration-100 ease-out ${cartQty > 0 ? 'h-22' : 'h-7'}`} />
+          <div
+            className={`absolute bottom-0 left-0 w-full transition-all duration-100 ease-out origin-bottom
+              ${cartQty > 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}
+            `}
+          >
+            <QuantityBtn
+              count={cartQty > 0 ? cartQty : 1}
+              onIncrease={handleCounterClick}
+              onDecrease={handleCounterDecrease}
+            />
           </div>
+
+          <div
+            className={`absolute bottom-0 left-0 w-full transition-all duration-100 ease-out origin-bottom
+              ${cartQty > 0 ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'}
+            `}
+          >
+            <button
+              onClick={onAddClick}
+              className="w-8 h-7 bg-brand-red rounded-lg flex items-center justify-center shadow-md text-white active:scale-90 transition-transform"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

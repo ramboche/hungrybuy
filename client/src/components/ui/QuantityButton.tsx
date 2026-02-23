@@ -8,35 +8,36 @@ interface Props {
 
 export default function QuantityBtn({ count, onIncrease, onDecrease }: Props) {
   return (
-    <div className="flex items-center bg-brand-red text-white p-0.5 rounded-full h-8 w-22 justify-between shadow-md overflow-hidden">
-      {/* Minus Button */}
+    <div className="flex flex-col items-center gap-2 bg-gray-50 rounded-xl p-1 h-22 shadow-inner border border-gray-100">
+
       <button
         onClick={(e) => {
           e.stopPropagation();
           onDecrease();
         }}
-        className="bg-white rounded-full p-1.5 hover:bg-gray-50 transition-colors active:scale-95 shrink-0 flex items-center justify-center"
+        className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-brand-dark active:scale-90 transition-transform border border-gray-100"
         type="button"
       >
-        <Minus size={14} className="text-brand-red" strokeWidth={4} />
+        <Minus size={14} />
       </button>
 
-      {/* Number Display */}
-      <span className="font-bold text-[13px] text-center flex-1 select-none">
+      <span className="text-xs font-bold h-2 flex items-center justify-center text-brand-dark select-none">
         {count}
       </span>
 
-      {/* Plus Button */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onIncrease();
         }}
-        className="bg-white rounded-full p-1.5 hover:bg-gray-50 transition-colors active:scale-95 shrink-0 flex items-center justify-center"
+        className="w-8 h-8 bg-brand-red rounded-lg flex items-center justify-center shadow-sm text-white active:scale-90 transition-transform"
         type="button"
       >
-        <Plus size={14} className="text-brand-red" strokeWidth={4} />
+        <Plus size={14} />
       </button>
+
+
+
     </div>
   );
 }

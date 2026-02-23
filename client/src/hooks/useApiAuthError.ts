@@ -15,7 +15,7 @@ export const useApiAuthError = () => {
     }
 
     if (err.response && err.response.status === 401) {
-      localStorage.removeItem("token");   
+      localStorage.removeItem("accessToken");   
       router.push("/login");
     }
   }, [router]);

@@ -12,11 +12,16 @@ import menuRoutes from "./routes/menu.route";
 import cartRoutes from "./routes/cart.route";
 import createOrder from "./routes/order.route";
 import { logger } from "./lib/logger";
+import { createServer } from "http";
+import { initSocket } from "./sockets";
 
 dotenv.config();
 
 export function startServer() {
   const app = express();
+  const server = createServer(app);
+
+  initSocket(server);
 
   app.disable("x-powered-by");
 

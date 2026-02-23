@@ -34,8 +34,35 @@ model User {
   password String?
   role     Role    @default(USER)
 
+  authSessions AuthSession[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model AuthSession {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessTokenHash  String
+  refreshTokenHash String
+
+  accessExpiry  DateTime
+  refreshExpiry DateTime
+
+  revoked Boolean @default(false)
+
+  userAgent String?
+  ipAddress String?
+
+  lastUsedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Table {
@@ -48,8 +75,10 @@ model Table {
 }
 
 model Category {
-  id    String     @id @default(uuid())
-  name  String     @unique
+  id    String  @id @default(uuid())
+  name  String  @unique
+  image String?
+
   items MenuItem[]
 
   createdAt DateTime @default(now())

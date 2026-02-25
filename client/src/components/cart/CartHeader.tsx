@@ -1,4 +1,4 @@
-import { ChevronLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 interface CartHeaderProps {
     onBack: () => void;
@@ -6,15 +6,20 @@ interface CartHeaderProps {
 
 export default function CartHeader({ onBack }: CartHeaderProps) {
     return (
-        <div className="flex items-center justify-between px-6 py-6 shrink-0">
+        <div className="flex items-center justify-between px-6 py-5 shrink-0 relative">
+
             <button
                 onClick={onBack}
-                className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-brand-dark active:scale-90 transition-transform"
+                className="p-1 -ml-1 text-gray-900 active:scale-90 transition-transform rounded-full hover:bg-gray-100 z-10"
             >
-                <ChevronLeft size={24} />
+                <ArrowLeft size={24} strokeWidth={2.5} />
             </button>
-            <h1 className="text-xl font-bold text-brand-dark">Your Order</h1>
-            <div className="w-10"></div>
+
+            <h1 className="text-lg font-bold text-gray-900 absolute left-1/2 -translate-x-1/2">
+                Your Order
+            </h1>
+
+            <div className="w-8"></div>
         </div>
     );
 }

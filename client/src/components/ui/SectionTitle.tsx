@@ -8,11 +8,12 @@ export default function SectionTitle({
   categorydescription,
 }: Props) {
   return (
-    <div>
-      <h2 className="text-xl md:text-2xl font-bold text-brand-dark">
+    <div className="mb-4 px-1">
+      <h2 className="text-[20px] font-extrabold text-gray-900 tracking-tight">
         {categoryName}
       </h2>
-      <p className="text-[12px] md:text-sm text-gray-500 mt-1">
+
+      <p className="text-[13px] font-medium text-gray-500 mt-1">
         {categorydescription || "Freshly made with premium ingredients"}
       </p>
     </div>

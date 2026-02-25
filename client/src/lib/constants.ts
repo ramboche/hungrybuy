@@ -1,8 +1,10 @@
-// import { Category } from "./types";
+// lib/constants.ts
 
-// export const CATEGORIES: Category[] = [
-//   { id: "1", name: "Burgers", image: "/images/burgers.jpeg" },
-//   { id: "2", name: "Sushi", image: "/images/sushi.jpeg" },
-//   { id: "3", name: "Shakes", image: "/images/shakes.jpeg" },
-//   { id: "4", name: "Desserts", image: "/images/desserts.jpeg" },
-// ];
+export const CATEGORY_ICONS: Record<string, string> = {
+  "pizza": "/images/pizza.svg",
+  "burger": "/images/burger.svg",
+  "noodles": "/images/noodles.svg",
+  "dessert": "/images/dessert.svg",
+  "drinks": "/images/drinks.svg",
+  "all": "/images/all.svg" // Optional: if you have an icon for 'All'
+};

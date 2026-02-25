@@ -6,6 +6,7 @@ import CartProductCard from './CartProductCard';
 import CartFooter from './CartFooter';
 import { useState } from 'react';
 import { BackendCartItem } from '@/lib/types';
+import CartPageEmpty from './CartPageEmpty';
 
 
 interface CartPageProps {
@@ -40,36 +41,39 @@ export default function CartPage({
   };
 
   return (
-    <div className="flex flex-col h-full bg-brand-bg relative">
+    <div className="flex flex-col h-full bg-gray-50 relative overflow-hidden">
 
       <CartHeader onBack={onBack} />
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-6 pb-32 space-y-4">
+      <div className="flex-1 overflow-y-auto bg-brand-bg scrollbar-hide px-4 sm:px-6 pt-2 pb-40">
 
         <TableStatusCard />
 
-        {cartItems.length > 0 ? (
-          cartItems.map((item) => {
-            return <CartProductCard
-              key={item.id}
-              item={item}
-              onIncrease={onIncrease}
-              onDecrease={onDecrease} />;
-          })
-        ) : (
-          <div className="text-center py-20 opacity-50">
-            <p className="text-gray-400">Your cart is empty</p>
-          </div>
-        )}
+        <div className="flex flex-col">
+          {cartItems.length > 0 ? (
+            cartItems.map((item) => {
+              return <CartProductCard
+                key={item.id}
+                item={item}
+                onIncrease={onIncrease}
+                onDecrease={onDecrease}
+              />;
+            })
+          ) : (
+            <CartPageEmpty />
+          )}
+        </div>
 
       </div>
 
-      <CartFooter
-        totalAmount={totalAmount}
-        isPlacing={isPlacing}
-        cartItems={cartItems}
-        handlePlaceOrderClick={handlePlaceOrderClick}
-      />
+      {cartItems.length > 0 && (
+        <CartFooter
+          totalAmount={totalAmount}
+          isPlacing={isPlacing}
+          cartItems={cartItems}
+          handlePlaceOrderClick={handlePlaceOrderClick}
+        />
+      )}
 
     </div>
   );

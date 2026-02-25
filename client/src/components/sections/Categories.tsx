@@ -13,26 +13,31 @@ export default function Categories({
   onSelectCategory 
 }: CategoriesProps) {
   return (
-    <div className="flex flex-col gap-y-6 items-center w-full px-2 py-6">
-      <CategoryItem
-        id="all"
-        name="All"
-        image=""
-        isActive={selectedCategory === "all"}
-        onClick={() => onSelectCategory("all")}
-      />
+    <div className="flex flex-col w-full mb-2">
+      
+      {/* Header Row */}
+      <div className="flex justify-between items-center mb-4 px-1">
+        <h2 className="text-lg font-bold text-gray-900">Categories</h2>
+        <button className="text-sm font-semibold text-brand-orange hover:opacity-80 transition-opacity">
+          See All
+        </button>
+      </div>
 
-      {/* 2. Dynamic Categories from API */}
-      {categories.map((cat) => (
-        <CategoryItem
-          key={cat.id}
-          id={cat.id}
-          name={cat.name}
-          image={cat.image} 
-          isActive={selectedCategory === cat.id}
-          onClick={() => onSelectCategory(cat.id)}
-        />
-      ))}
+      {/* Horizontal Scrollable Categories List */}
+      <div className="flex overflow-x-auto gap-5 pb-2 px-1 mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {categories.map((cat) => (
+          <div key={cat.id} className="shrink-0">
+            <CategoryItem
+              id={cat.id}
+              name={cat.name}
+              image={cat.image} 
+              isActive={selectedCategory === cat.id}
+              onClick={() => onSelectCategory(cat.id)}
+            />
+          </div>
+        ))}
+      </div>
+      
     </div>
   );
 }

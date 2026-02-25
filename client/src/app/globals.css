@@ -2,10 +2,14 @@
 
 @theme {
   /* Define your custom colors here */
-  --color-brand-red: #E83B2E;
-  --color-brand-bg: #F5F5F7;
-  --color-brand-dark: #1A1A1A;
-  --color-brand-gray: #888888;
+
+  --color-brand-orange: #F26B1E;       
+  --color-brand-orange-light: #FDF4EE;
+
+  /* 2. Backgrounds & Text */
+  --color-brand-bg: #F8F7F5;   
+  --color-brand-dark: #111827; 
+  --color-brand-gray: #6B7280; 
   
   /* You can also define border radius if you want specific names, 
      but default rounded-2xl/3xl works fine. */

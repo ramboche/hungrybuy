@@ -27,7 +27,7 @@ export default function QRScannerModal({ isOpen, onClose, onScan }: QRScannerMod
         <X size={24} />
       </button>
 
-      <div className="w-full max-w-sm relative aspect-square rounded-3xl overflow-hidden border-2 border-brand-red/50 shadow-2xl">
+      <div className="w-full max-w-sm relative aspect-square rounded-3xl overflow-hidden border-2 border-brand-orange/50 shadow-2xl">
         <Scanner
           onScan={(result) => {
             if (result && result.length > 0) {

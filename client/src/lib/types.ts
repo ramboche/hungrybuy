@@ -31,6 +31,7 @@ export interface BackendCartItem {
     id: string;
     name: string;
     price: number | null;
+    description: string | null;
     image?: string | null;
   };
   variant?: {

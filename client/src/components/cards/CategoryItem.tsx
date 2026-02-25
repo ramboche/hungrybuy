@@ -12,36 +12,46 @@ export default function CategoryItem({ name, image, isActive, onClick }: Props) 
   return (
     <div 
       onClick={onClick}
-      className="flex flex-col items-center gap-2 group cursor-pointer w-full shrink-0"
+      className="flex flex-col items-center gap-1 cursor-pointer group w-14"
     >
+      {/* Icon Circle */}
       <div 
-        style={{ WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
         className={`
-          relative w-14 h-14 rounded-full overflow-hidden flex items-center justify-center transition-all border-2
+          relative w-14 h-14 m-1 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300 shrink-0
           ${isActive 
-            ? 'bg-brand-red/10 border-brand-red/20 shadow-sm scale-105' 
-            : 'bg-brand-bg border-transparent hover:border-brand-red/10' 
+            ? 'bg-brand-orange ring-2 ring-brand-orange ring-offset-2 ring-offset-white scale-100' 
+            : 'bg-[#F6F6F6] hover:bg-gray-200' 
           }
       `}>
+         {/* Fallback Text if no image */}
          {(!image || image === "") && (
-           <div className={`relative z-10 text-[9px] leading-tight font-bold text-center px-1 line-clamp-2 wrap-break-word ${isActive ? 'text-brand-red' : 'text-brand-dark/40'}`}>
+           <div className={`relative z-10 text-[10px] leading-tight font-bold text-center px-1 wrap-break-word 
+             ${isActive ? 'text-white' : 'text-gray-500'}
+           `}>
              {name}
            </div>
          )}
          
+         {/* Category Image */}
          {image && (
           <Image 
             src={image} 
             alt={name} 
             fill 
-            className={`object-contain p-2.5 transition-opacity ${isActive ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`} 
+            sizes="64px"
+            className={`object-contain p-4 transition-all duration-300 
+              ${isActive ? 'brightness-0 invert opacity-100' : 'opacity-60 group-hover:opacity-80'}
+            `} 
           />
          )}
       </div>
       
-      {/* <span className={`text-[11px] font-medium transition-colors text-center ${isActive ? 'text-brand-red font-bold' : 'text-brand-dark/60 group-hover:text-brand-dark'}`}>
+      {/* Category Name */}
+      <span className={`text-[8px] text-center font-bold transition-colors
+        ${isActive ? 'text-brand-orange ' : 'text-gray-600 '}
+      `}>
         {name}
-      </span> */}
+      </span>
     </div>
   );
 }

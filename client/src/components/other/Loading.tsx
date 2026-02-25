@@ -6,11 +6,11 @@ export default function Loading() {
 
             <div className="relative flex items-center justify-center">
 
-                <span className="absolute inline-flex h-20 w-20 animate-ping rounded-full bg-brand-red opacity-20 duration-1000"></span>
-                <span className="absolute inline-flex h-16 w-16 animate-ping rounded-full bg-brand-red opacity-30 delay-150 duration-1000"></span>
+                <span className="absolute inline-flex h-20 w-20 animate-ping rounded-full bg-brand-orange opacity-20 duration-1000"></span>
+                <span className="absolute inline-flex h-16 w-16 animate-ping rounded-full bg-brand-orange opacity-30 delay-150 duration-1000"></span>
 
 
-                <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-brand-red shadow-xl shadow-red-200 ring-4 ring-white">
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-brand-orange shadow-xl shadow-red-200 ring-4 ring-white">
 
                     <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-white border-t-transparent" />
                 </div>

@@ -9,14 +9,14 @@ interface Props {
 
 export default function DietFilter({ activeFilter, onFilterChange }: Props) {
   return (
-    <div className="flex gap-3 mb-6">
+    <div className="flex gap-3 mb-1">
       {/* All Button */}
       <button
         onClick={() => onFilterChange('all')}
-        className={`px-3 py-1 rounded-full text-xs font-medium transition-all border
+        className={`px-6 py-2 rounded-full text-xs font-medium transition-all border shrink-0
           ${activeFilter === 'all' 
-            ? 'bg-brand-dark text-white border-brand-dark' 
-            : 'bg-white text-gray-500 border-gray-200'}`}
+            ? 'bg-gray-900 text-white border-gray-900' 
+            : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'}`}
       >
         All
       </button>
@@ -24,24 +24,24 @@ export default function DietFilter({ activeFilter, onFilterChange }: Props) {
       {/* Veg Button */}
       <button
         onClick={() => onFilterChange('veg')}
-        className={`px-3 py-1 rounded-full text-xs font-medium transition-all border flex items-center gap-2
+        className={`px-2 py-2 rounded-full text-xs font-medium transition-all border flex items-center gap-2 shrink-0
           ${activeFilter === 'veg' 
-            ? 'bg-green-600 text-white border-green-600' 
-            : 'bg-white text-gray-500 border-gray-200'}`}
+            ? 'bg-gray-900 text-white border-gray-900' 
+            : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'}`}
       >
-        <span className="w-2 h-2 rounded-full bg-green-400 ring-2 ring-green-200" />
-        Veg
+        <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+        Veg Only
       </button>
 
       {/* Non-Veg Button */}
       <button
         onClick={() => onFilterChange('non-veg')}
-        className={`px-3 py-1 rounded-full text-xs font-medium transition-all border flex items-center gap-2
+        className={`px-2 py-2 rounded-full text-xs font-medium transition-all border flex items-center gap-2 shrink-0
           ${activeFilter === 'non-veg' 
-            ? 'bg-red-600 text-white border-red-600' 
-            : 'bg-white text-gray-500 border-gray-200'}`}
+            ? 'bg-gray-900 text-white border-gray-900' 
+            : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'}`}
       >
-         <span className="w-2 h-2 rounded-full bg-red-400 ring-2 ring-red-200" />
+         <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
         Non-Veg
       </button>
     </div>

@@ -66,7 +66,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="h-dvh w-full md:max-w-md md:mx-auto bg-brand-bg relative shadow-xl overflow-hidden">
+    <main className="h-dvh w-full md:max-w-md md:mx-auto bg-white relative shadow-[0_0_40px_-10px_rgba(0,0,0,0.1)] overflow-hidden">
       <AnimatePresence initial={false} custom={direction}>
         {step === "PHONE" && (
           <PhoneStep

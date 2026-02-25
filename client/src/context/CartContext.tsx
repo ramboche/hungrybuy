@@ -23,6 +23,7 @@ type MenuItem = {
   id: string;
   name: string;
   price: number | null;
+  description: string | null;
   isAvailable: boolean;
   image?: string | null;
   categoryId: string;

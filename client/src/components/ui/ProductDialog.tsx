@@ -54,11 +54,7 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
           <div className="flex justify-between items-start">
             <div className="flex gap-4">
               <div className="w-16 h-16 relative rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
-                {imageUrl ? (
-                  <Image src={imageUrl || '/placeholder.png'} alt={product.name} fill className="object-cover" unoptimized={true} />
-                ) : (
-                  <div className="w-full h-full bg-gray-200" />
-                )}
+                <Image src={imageUrl || '/images/burgers.jpeg'} alt={product.name} fill className="object-cover" unoptimized={true} />
               </div>
               <div>
                 <h3 className="font-bold text-lg sm:text-xl text-brand-dark leading-tight pr-4">{product.name}</h3>
@@ -77,12 +73,13 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
             <div key={size.label} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
               <div>
                 <span className="font-semibold text-sm sm:text-base text-brand-dark block">{size.label}</span>
-                <span className="text-brand-red font-bold text-sm sm:text-base">$ {(size.price)}</span>
+                <span className="text-brand-orange/85 font-bold text-sm sm:text-base">$ {(size.price)}</span>
               </div>
               <QuantityBtn
                 count={quantities[size.label] || 0}
                 onIncrease={() => handleIncrease(size.label)}
                 onDecrease={() => handleDecrease(size.label)}
+                onAddClick={() => handleIncrease(size.label)}
               />
             </div>
           ))}
@@ -92,7 +89,7 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
         <div className="p-6 pt-4 bg-white shrink-0 pb-8 sm:pb-6">
           <button
             onClick={handleSaveBtn}
-            className="w-full bg-brand-red text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-red-100 active:scale-95 transition-transform"
+            className="w-full bg-brand-orange text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-orange-100 active:scale-95 transition-transform"
           >
             Update Cart
           </button>

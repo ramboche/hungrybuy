@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import QRScannerModal from '@/components/auth/QRScannerModal';
-import { ShoppingBag, Search, QrCode } from 'lucide-react';
+import { Search, QrCode, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 interface HeaderProps {
@@ -13,12 +13,12 @@ interface HeaderProps {
   onSearchFocus?: () => void;
 }
 
-export default function Header({ cartCount = 0, onCartClick, searchQuery, onSearchChange , onSearchFocus}: HeaderProps) {
+export default function Header({ cartCount = 0, onCartClick, searchQuery, onSearchChange, onSearchFocus }: HeaderProps) {
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { tableToken, tableNo, resolveTableFromToken } = useCart();
 
-  const handleScan = async (scannedUrl: string) => { 
+  const handleScan = async (scannedUrl: string) => {
     try {
       let qrToken = '';
 
@@ -33,9 +33,9 @@ export default function Header({ cartCount = 0, onCartClick, searchQuery, onSear
 
       if (qrToken) {
         setIsScannerOpen(false);
-      
+
         await resolveTableFromToken(qrToken);
-        
+
       } else {
         alert("Invalid QR Code. Please scan a valid table code.");
       }
@@ -47,57 +47,67 @@ export default function Header({ cartCount = 0, onCartClick, searchQuery, onSear
 
   return (
     <>
-      <div className="py-5 flex flex-col gap-6">
-        <div className="flex gap-3 items-center">
+      <div className="py-4 flex flex-col gap-5">
 
-          {/* LEFT: Cart Button */}
-          <button
-            onClick={onCartClick}
-            className="w-12 h-12 bg-brand-red rounded-full flex items-center justify-center text-white shadow-lg shadow-red-200 relative shrink-0 active:scale-90 transition-transform"
-          >
-            <ShoppingBag size={24} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-brand-red text-xs font-bold flex items-center justify-center rounded-full border-2 border-brand-red">
-                {cartCount}
-              </span>
-            )}
-          </button>
+        {/* TOP ROW: Logo and Actions */}
+        <div className="flex justify-between items-center">
 
-          {/* CENTER: Search Bar */}
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Search food..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              onFocus={onSearchFocus}
-              className="w-full h-12 bg-white rounded-full pl-6 pr-10 text-base text-gray-600 outline-none border border-transparent focus:border-brand-red transition-all shadow-sm placeholder:text-gray-400"
-            />
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          {/* Brand Logo & Subtitle */}
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-none mb-1">
+              HungryBuy<span className="text-brand-orange">.</span>
+            </h1>
+            <p className="text-xs text-gray-500 font-medium">Delicious food at your table</p>
           </div>
 
-          {/* RIGHT: Table Indicator or QR Button */}
-          <button
-            onClick={() => setIsScannerOpen(true)}
-            className={`
-              w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm border transition-all relative bg-white
-              ${tableToken ? 'border-green-200' : 'border-transparent active:scale-95 hover:bg-gray-50 cursor-pointer'}
-            `}
-          >
-            {tableToken ? (
-              <div className="flex flex-col items-center leading-none">
-                <span className="text-[7px] font-bold text-gray-400 uppercase tracking-wide">Table</span>
-                <span className="text-base font-black text-brand-dark -mt-0.5">{tableNo}</span>
-              </div>
-            ) : (
-              <QrCode size={20} className="text-brand-dark" />
-            )}
-          </button>
+          {/* Right Actions: Table Info & Cart */}
+          <div className="flex items-center gap-4">
 
+            {/* Table Indicator / QR Scanner */}
+            <button
+              onClick={() => setIsScannerOpen(true)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all ${tableToken
+                  ? 'bg-[#f16716] text-white shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
+                }`}
+            >
+              {tableToken ? (
+                <span className="text-sm font-bold">{tableNo}</span>
+              ) : (
+                <QrCode size={18} />
+              )}
+            </button>
+
+            {/* Cart Button */}
+            <button
+              onClick={onCartClick}
+              className="relative p-1 shrink-0 active:scale-95 transition-transform"
+            >
+              <ShoppingCart size={26} className="text-gray-800" strokeWidth={2.5} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-brand-orange text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* BOTTOM ROW: Search Bar */}
+        <div className="relative w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search for dishes, drinks..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onFocus={onSearchFocus}
+            className="w-full h-12 bg-[#F6F6F6] rounded-xl pl-11 pr-4 text-base text-gray-700 outline-none border border-transparent focus:border-brand-orange transition-all placeholder:text-gray-400 font-medium"
+          />
+        </div>
+
       </div>
 
-      {/* --- QR SCANNER MODAL --- */}
       <QRScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}

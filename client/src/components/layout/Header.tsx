@@ -4,6 +4,7 @@ import { useState } from 'react';
 import QRScannerModal from '@/components/auth/QRScannerModal';
 import { Search, QrCode, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   cartCount?: number;
@@ -13,10 +14,12 @@ interface HeaderProps {
   onSearchFocus?: () => void;
 }
 
-export default function Header({ cartCount = 0, onCartClick, searchQuery, onSearchChange, onSearchFocus }: HeaderProps) {
+export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { tableToken, tableNo, resolveTableFromToken } = useCart();
+
+  const router = useRouter();
 
   const handleScan = async (scannedUrl: string) => {
     try {
@@ -47,7 +50,7 @@ export default function Header({ cartCount = 0, onCartClick, searchQuery, onSear
 
   return (
     <>
-      <div className="py-4 flex flex-col gap-5">
+      <div className="py-2 flex flex-col gap-5">
 
         {/* TOP ROW: Logo and Actions */}
         <div className="flex justify-between items-center">
@@ -67,8 +70,8 @@ export default function Header({ cartCount = 0, onCartClick, searchQuery, onSear
             <button
               onClick={() => setIsScannerOpen(true)}
               className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all ${tableToken
-                  ? 'bg-[#f16716] text-white shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
+                ? 'bg-[#f16716] text-white shadow-md'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer'
                 }`}
             >
               {tableToken ? (
@@ -94,16 +97,14 @@ export default function Header({ cartCount = 0, onCartClick, searchQuery, onSear
         </div>
 
         {/* BOTTOM ROW: Search Bar */}
-        <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search for dishes, drinks..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            onFocus={onSearchFocus}
-            className="w-full h-12 bg-[#F6F6F6] rounded-xl pl-11 pr-4 text-base text-gray-700 outline-none border border-transparent focus:border-brand-orange transition-all placeholder:text-gray-400 font-medium"
-          />
+        <div
+          onClick={() => router.push('/search')}
+          className="relative w-full cursor-pointer group"
+        >
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-brand-orange transition-colors" size={18} />
+          <div className="w-full h-10 bg-[#F6F6F6] rounded-xl flex items-center pl-11 pr-4 text-base text-gray-400 border border-transparent group-hover:border-brand-orange transition-all font-medium">
+            Search for dishes, drinks...
+          </div>
         </div>
 
       </div>

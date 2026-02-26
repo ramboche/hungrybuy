@@ -29,7 +29,7 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
   const isNonVeg = product.foodType === 'NON_VEG';
 
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-50 flex flex-col w-full group">
+    <div id={`product-${product.id}`} className="bg-white rounded-3xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-50 flex flex-col w-full group">
 
       {/* 🔴 Top Section: Large Image & Overlays */}
       <div className="relative w-full h-48 sm:h-56 bg-gray-100 overflow-hidden shrink-0">

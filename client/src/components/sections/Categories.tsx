@@ -1,26 +1,31 @@
-import CategoryItem from "@/components/cards/CategoryItem"; 
+import CategoryItem from "@/components/cards/CategoryItem";
 import { Category } from "@/lib/types";
+import DietFilter from "../ui/DietFilter";
+
+type FilterType = 'all' | 'veg' | 'non-veg';
 
 interface CategoriesProps {
   categories: Category[];
   selectedCategory: string;
   onSelectCategory: (id: string) => void;
+  activeDietFilter: FilterType
+  onFilterChange: (filter: FilterType) => void;
 }
 
-export default function Categories({ 
-  categories, 
-  selectedCategory, 
-  onSelectCategory 
+export default function Categories({
+  categories,
+  selectedCategory,
+  onSelectCategory,
+  activeDietFilter,
+  onFilterChange
 }: CategoriesProps) {
   return (
-    <div className="flex flex-col w-full mb-2">
-      
+    <div className="flex flex-col w-full">
+
       {/* Header Row */}
-      <div className="flex justify-between items-center mb-4 px-1">
+      <div className="flex justify-between items-center mb-3 px-1">
         <h2 className="text-lg font-bold text-gray-900">Categories</h2>
-        <button className="text-sm font-semibold text-brand-orange hover:opacity-80 transition-opacity">
-          See All
-        </button>
+        <DietFilter activeFilter={activeDietFilter} onFilterChange={onFilterChange} />
       </div>
 
       {/* Horizontal Scrollable Categories List */}
@@ -30,14 +35,14 @@ export default function Categories({
             <CategoryItem
               id={cat.id}
               name={cat.name}
-              image={cat.image} 
+              image={cat.image}
               isActive={selectedCategory === cat.id}
               onClick={() => onSelectCategory(cat.id)}
             />
           </div>
         ))}
       </div>
-      
+
     </div>
   );
 }

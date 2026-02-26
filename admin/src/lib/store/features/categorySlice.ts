@@ -33,9 +33,13 @@ export const fetchCategories = createAsyncThunk(
 
 export const addCategory = createAsyncThunk(
   'categories/add',
-  async (name: string, { rejectWithValue }) => {
+  async (formData: FormData, { rejectWithValue }) => {
     try {
-      const response = await api.post('/categories/create', { name });
+      const response = await api.post('/categories/create', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data.data.category; // { data: { category: {...} } }
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;

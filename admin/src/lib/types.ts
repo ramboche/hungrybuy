@@ -18,6 +18,7 @@ export interface User {
 export interface Category {
   id: string;
   name: string;
+  image?: string | null; 
 }
 
 export interface MenuVariant {

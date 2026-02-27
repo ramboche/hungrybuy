@@ -14,7 +14,6 @@ export default function MenuRow({ product, onEdit, onDelete }: Props) {
     ? `${process.env.NEXT_PUBLIC_API_URL}${product.image}` 
     : null;
 
-  console.log(product)
   return (
     <div className="bg-white p-4 rounded-2xl border border-gray-100 flex gap-4 items-center shadow-sm group hover:shadow-md transition-all">
       {/* Image */}

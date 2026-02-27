@@ -5,7 +5,6 @@ import SectionTitle from "@/components/ui/SectionTitle";
 import Categories from "@/components/sections/Categories";
 import FeaturedProducts from "@/components/sections/FeaturedProducts";
 import ProductDialog from "@/components/ui/ProductDialog";
-import DietFilter from "@/components/ui/DietFilter";
 import Loading from "@/components/other/Loading";
 import { Product, Category } from "@/lib/types";
 import { useState, useEffect, Suspense, useCallback, useRef } from "react";
@@ -40,6 +39,9 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  const categoryIdFromUrl = searchParams.get('categoryId');
+  const highlightIdFromUrl = searchParams.get('highlight');
 
   const [sortOrder, setSortOrder] = useState<string>("popular");
 
@@ -186,6 +188,32 @@ export default function Home() {
 
   }, [user, handleAuthError]);
 
+  useEffect(() => {
+    if (categoryIdFromUrl) {
+      setSelectedCategory(categoryIdFromUrl);
+    }
+
+    if (highlightIdFromUrl) {
+      const checkExist = setInterval(() => {
+        const element = document.getElementById(`product-${highlightIdFromUrl}`);
+
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          clearInterval(checkExist);
+          const url = new URL(window.location.href);
+          url.searchParams.delete('highlight');
+          window.history.replaceState({}, '', url.toString());
+        }
+      }, 500);
+      setTimeout(() => clearInterval(checkExist), 2000);
+
+      return () => clearInterval(checkExist);
+    }
+  }, [categoryIdFromUrl, highlightIdFromUrl]);
+
+
+
   if (isLoading) {
     return <Loading />;
   }
@@ -264,12 +292,10 @@ export default function Home() {
       </Suspense>
 
       {/* 1. Header Section (Sticky at the top) */}
-      <div className="w-full px-4 sm:px-6 shrink-0 z-20 bg-white pt-2 pb-2">
+      <div className="w-full px-4 sm:px-6 shrink-0 z-20 bg-white pt-2">
         <Header
           cartCount={getTotalCartCount()}
           onCartClick={() => router.push("/cart")}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
         />
       </div>
 
@@ -282,16 +308,13 @@ export default function Home() {
             categories={categories}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
+            activeDietFilter={dietFilter}
+            onFilterChange={setDietFilter}
           />
         </div>
 
-        {/* 3. Diet Filters */}
-        <div className="px-4 sm:px-6">
-          <DietFilter activeFilter={dietFilter} onFilterChange={setDietFilter} />
-        </div>
-
         {/* 4. Section Title & Sort By */}
-        <div className="px-4 sm:px-6 mt-6 flex items-start justify-between">
+        <div className="px-4 sm:px-6 mt-4 flex items-start justify-between">
           <SectionTitle
             categoryName={currentCategoryName}
             categorydescription={selectedCategory === "all" ? "Explore our delicious menu" : "Freshly made with premium ingredients"}

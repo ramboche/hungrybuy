@@ -8,42 +8,45 @@ interface Props {
 }
 
 export default function DietFilter({ activeFilter, onFilterChange }: Props) {
+  const isVegOnly = activeFilter === 'veg';
+
+  const handleToggle = () => {
+    onFilterChange(isVegOnly ? 'all' : 'veg');
+    console.log(isVegOnly)
+  };
+
   return (
-    <div className="flex gap-3 mb-1">
-      {/* All Button */}
-      <button
-        onClick={() => onFilterChange('all')}
-        className={`px-6 py-2 rounded-full text-xs font-medium transition-all border shrink-0
-          ${activeFilter === 'all' 
-            ? 'bg-gray-900 text-white border-gray-900' 
-            : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'}`}
-      >
-        All
-      </button>
+    <div className="flex items-center mt-2 mb-2 px-1">
+      <label className="flex items-center cursor-pointer group">
 
-      {/* Veg Button */}
-      <button
-        onClick={() => onFilterChange('veg')}
-        className={`px-2 py-2 rounded-full text-xs font-medium transition-all border flex items-center gap-2 shrink-0
-          ${activeFilter === 'veg' 
-            ? 'bg-gray-900 text-white border-gray-900' 
-            : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'}`}
-      >
-        <span className="w-2 h-2 rounded-full bg-[#10B981]" />
-        Veg Only
-      </button>
+        {/* Label */}
+        <span className="text-sm font-bold text-gray-800 select-none">
+          Veg
+        </span>
 
-      {/* Non-Veg Button */}
-      <button
-        onClick={() => onFilterChange('non-veg')}
-        className={`px-2 py-2 rounded-full text-xs font-medium transition-all border flex items-center gap-2 shrink-0
-          ${activeFilter === 'non-veg' 
-            ? 'bg-gray-900 text-white border-gray-900' 
-            : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'}`}
-      >
-         <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
-        Non-Veg
-      </button>
+        {/* Custom Toggle Switch */}
+        <div className="relative ml-2 flex items-center">
+          <input
+            type="checkbox"
+            className="sr-only"
+            checked={isVegOnly}
+            onChange={handleToggle}
+          />
+          {/* Switch Background */}
+          <div
+            className={`block w-11 h-6 rounded-full transition-colors duration-300 ease-in-out shadow-inner
+              ${isVegOnly ? 'bg-[#10B981]' : 'bg-gray-200'}
+            `}
+          ></div>
+          {/* Switch Knob */}
+          <div
+            className={`absolute left-1 bg-brand-orange-light w-4 h-4 rounded-full transition-transform duration-300 ease-in-out shadow-sm
+              ${isVegOnly ? 'translate-x-5' : 'translate-x-0'}
+            `}
+          ></div>
+        </div>
+
+      </label>
     </div>
   );
 }

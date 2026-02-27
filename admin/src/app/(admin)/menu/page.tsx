@@ -12,6 +12,7 @@ import MenuRow from '@/components/menu/MenuRow';
 import CategoryPills from '@/components/menu/CategoryPills';
 import AddProductModal from '@/components/modals/AddProductModal';
 import ManageCategoriesModal from '@/components/modals/ManageCategoriesModal';
+import { form } from 'framer-motion/client';
 
 export default function MenuPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -97,7 +98,7 @@ export default function MenuPage() {
       </button>
 
       <AddProductModal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)} onSave={handleSaveProduct} categories={categories} initialData={editingProduct} />
-      <ManageCategoriesModal isOpen={isCategoryModalOpen} onClose={() => setIsCategoryModalOpen(false)} categories={categories} onAdd={async (name) => { const r = await dispatch(addCategory(name)); if (addCategory.fulfilled.match(r)) setIsCategoryModalOpen(false); }} onDelete={(id) => { if (confirm("Delete category?")) dispatch(deleteCategory(id)); }} />
+      <ManageCategoriesModal isOpen={isCategoryModalOpen} onClose={() => setIsCategoryModalOpen(false)} categories={categories} onAdd={async (formData) => { const r = await dispatch(addCategory(formData)); }} onDelete={(id) => { if (confirm("Delete category?")) dispatch(deleteCategory(id)); }} />
     </main>
   );
 }

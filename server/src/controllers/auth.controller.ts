@@ -10,7 +10,7 @@ import {
 import { TypedRequest } from "../types/request";
 import { LoginUserBody, RefreshTokenBody } from "../validation/auth.schema";
 import { hashToken } from "../utils/hash";
-import { deleteSession, storeSession } from "../lib/session";
+import { deleteSession } from "../lib/session";
 
 export async function loginUser(
   req: TypedRequest<{}, LoginUserBody, {}>,
@@ -44,12 +44,14 @@ export async function loginUser(
       id: user.id,
       role: user.role,
       sessionId,
+      restaurantId: undefined,
     });
 
     const refreshToken = signRefreshToken({
       id: user.id,
       role: user.role,
       sessionId,
+      restaurantId: undefined,
     });
 
     await prisma.authSession.create({
@@ -64,8 +66,6 @@ export async function loginUser(
         ipAddress: req.ip,
       },
     });
-
-    await storeSession(sessionId, user.id, user.role);
 
     return res.status(200).json({
       message: "Login successful",
@@ -112,12 +112,14 @@ export async function refreshToken(
       id: session.user.id,
       role: session.user.role,
       sessionId: newSessionId,
+      restaurantId: undefined,
     });
 
     const newRefreshToken = signRefreshToken({
       id: session.user.id,
       role: session.user.role,
       sessionId: newSessionId,
+      restaurantId: undefined,
     });
 
     await prisma.authSession.create({
@@ -132,8 +134,6 @@ export async function refreshToken(
         ipAddress: req.ip,
       },
     });
-
-    await storeSession(newSessionId, session.user.id, session.user.role);
 
     return res.status(200).json({
       message: "Token refreshed successfully",

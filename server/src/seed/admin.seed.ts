@@ -12,11 +12,11 @@ export async function seedAdminUser() {
   });
 
   try {
-    const adminMail = process.env.ADMIN_MAIL;
-    const adminPass = process.env.ADMIN_PASS;
+    const adminMail = process.env.SEED_ADMIN_MAIL;
+    const adminPass = process.env.SEED_ADMIN_PASS;
 
     if (!adminMail || !adminPass) {
-      throw new Error("ADMIN_MAIL and ADMIN_PASS must be defined");
+      throw new Error("SEED_ADMIN_MAIL and SEED_ADMIN_PASS must be defined");
     }
 
     const user = await prisma.user.findUnique({
@@ -37,7 +37,7 @@ export async function seedAdminUser() {
         name: "Admin",
         email: adminMail,
         password: hashedPassword,
-        role: "ADMIN",
+        role: "PLATFORM_ADMIN",
       },
     });
 

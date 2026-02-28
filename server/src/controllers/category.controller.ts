@@ -7,9 +7,12 @@ import {
 } from "../validation/category.schema";
 import { deleteFileByUrl } from "../utils/file";
 
-export async function getAllCategories(_: TypedRequest, res: Response) {
+export async function getAllCategories(req: TypedRequest, res: Response) {
   try {
+    const { id: restaurantId } = req.restaurant!;
+
     const categories = await prisma.category.findMany({
+      where: { restaurantId },
       orderBy: { name: "asc" },
       select: {
         id: true,
@@ -32,6 +35,8 @@ export async function createCategory(
   res: Response,
 ) {
   try {
+    const { id: restaurantId } = req.restaurant!;
+
     let { name } = req.body;
     name = name.trim().toLocaleLowerCase();
 
@@ -44,6 +49,7 @@ export async function createCategory(
       data: {
         name,
         image,
+        restaurantId,
       },
       select: {
         id: true,
@@ -72,22 +78,40 @@ export async function deleteCategory(
 ) {
   try {
     const { id } = req.params;
+    const { id: restaurantId } = req.restaurant!;
 
     const deletedCategory = await prisma.$transaction(async (tx) => {
+      const category = await tx.category.findFirst({
+        where: {
+          id,
+          restaurantId,
+        },
+        select: {
+          id: true,
+          image: true,
+        },
+      });
+
+      if (!category) {
+        throw new Error("CATEGORY_NOT_FOUND");
+      }
+
       const itemCount = await tx.menuItem.count({
-        where: { categoryId: id },
+        where: {
+          categoryId: id,
+          restaurantId,
+        },
       });
 
       if (itemCount > 0) {
         throw new Error("HAS_ITEMS");
       }
 
-      const item = await tx.category.delete({
+      await tx.category.delete({
         where: { id },
-        select: { id: true, image: true },
       });
 
-      return item;
+      return category;
     });
 
     if (deletedCategory.image) {
@@ -102,14 +126,8 @@ export async function deleteCategory(
         .json({ message: "Cannot delete category with items" });
     }
 
-    if (error?.code === "P2025") {
+    if (error instanceof Error && error.message === "CATEGORY_NOT_FOUND") {
       return res.status(404).json({ message: "Category not found" });
-    }
-
-    if (error?.code === "P2003") {
-      return res
-        .status(400)
-        .json({ message: "Cannot delete category with items" });
     }
 
     console.error("CATEGORY_DELETE_ERROR", error);

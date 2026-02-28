@@ -7,9 +7,12 @@ import {
 } from "../validation/order.schema";
 import { Prisma } from "@prisma/client";
 
-export async function getAllOrders(_: TypedRequest, res: Response) {
+export async function getAllOrders(req: TypedRequest, res: Response) {
   try {
+    const { id: restaurantId } = req.restaurant!;
+
     const orders = await prisma.order.findMany({
+      where: { restaurantId },
       select: {
         id: true,
         status: true,
@@ -40,12 +43,16 @@ export async function getAllOrders(_: TypedRequest, res: Response) {
 
 export async function getActiveOrders(req: TypedRequest, res: Response) {
   try {
-    const { id: tableId } = req.table!;
+    const { id: tableId, restaurantId } = req.table!;
 
     const orders = await prisma.order.findMany({
       where: {
         tableId,
         isActive: true,
+        restaurantId,
+        table: {
+          restaurantId,
+        },
       },
       select: {
         id: true,
@@ -81,14 +88,29 @@ export async function updateOrderStatus(
   try {
     const { orderId } = req.params;
     const { status } = req.body;
+    const { id: restaurantId } = req.restaurant!;
 
     const isActive = !(status === "PAID" || status === "CANCELLED");
 
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
+    const result = await prisma.order.updateMany({
+      where: {
+        id: orderId,
+        restaurantId,
+      },
       data: {
         status,
         isActive,
+      },
+    });
+
+    if (result.count === 0) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const updatedOrder = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        restaurantId,
       },
       select: {
         id: true,
@@ -112,11 +134,7 @@ export async function updateOrderStatus(
       message: "Status updated successfully",
       data: { order: updatedOrder },
     });
-  } catch (error: any) {
-    if (error?.code === "P2025") {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
+  } catch (error) {
     console.log("UPDATE_ORDER_STATUS_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
@@ -124,18 +142,33 @@ export async function updateOrderStatus(
 
 export async function createOrder(req: TypedRequest, res: Response) {
   try {
-    const { id: tableId } = req.table!;
+    const { id: tableId, restaurantId } = req.table!;
 
     const result = await prisma.$transaction(async (tx) => {
       const cartItems = await tx.cartItem.findMany({
-        where: { tableId },
+        where: {
+          tableId,
+          table: {
+            restaurantId,
+          },
+        },
         select: {
           id: true,
           quantity: true,
           menuItemId: true,
           variantId: true,
-          menuItem: { select: { price: true, isAvailable: true } },
-          variant: { select: { price: true } },
+          menuItem: {
+            select: {
+              price: true,
+              isAvailable: true,
+              restaurantId: true,
+            },
+          },
+          variant: {
+            select: {
+              price: true,
+            },
+          },
         },
       });
 
@@ -146,11 +179,19 @@ export async function createOrder(req: TypedRequest, res: Response) {
       let totalAmount = new Prisma.Decimal(0);
 
       const orderItems = cartItems.map((item) => {
+        if (item.menuItem.restaurantId !== restaurantId) {
+          throw new Error("TENANT_MISMATCH");
+        }
+
         if (item.menuItem.isAvailable === false) {
           throw new Error("ITEM_NOT_AVAILABLE");
         }
 
-        const unitPrice = item.variant?.price ?? item.menuItem.price!;
+        const unitPrice = item.variant?.price ?? item.menuItem.price;
+
+        if (!unitPrice) {
+          throw new Error("INVALID_PRICE");
+        }
 
         const lineTotal = unitPrice.mul(item.quantity);
         totalAmount = totalAmount.add(lineTotal);
@@ -172,6 +213,7 @@ export async function createOrder(req: TypedRequest, res: Response) {
       const newOrder = await tx.order.create({
         data: {
           tableId,
+          restaurantId,
           totalAmount,
           isActive: true,
           items: {
@@ -193,7 +235,14 @@ export async function createOrder(req: TypedRequest, res: Response) {
         },
       });
 
-      await tx.cartItem.deleteMany({ where: { tableId } });
+      await tx.cartItem.deleteMany({
+        where: {
+          tableId,
+          table: {
+            restaurantId,
+          },
+        },
+      });
 
       return newOrder;
     });
@@ -202,6 +251,10 @@ export async function createOrder(req: TypedRequest, res: Response) {
       .status(201)
       .json({ message: "Order created successfully", data: { result } });
   } catch (error: any) {
+    if (error?.message === "TENANT_MISMATCH") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
     if (error?.message === "EMPTY_CART") {
       return res.status(400).json({ message: "Cart is empty" });
     }

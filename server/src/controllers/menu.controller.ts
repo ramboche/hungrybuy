@@ -20,15 +20,16 @@ import { getCache, setCache } from "../utils/cache";
 
 export async function getMenu(req: TypedRequest<{}, {}, {}>, res: Response) {
   try {
+    const { id: restaurantId } = req.restaurant!;
     const parsedQuery = GetMenuQuery.parse(req.query);
 
     const queryKey = JSON.stringify(parsedQuery);
     const cacheKey = `menu:${queryKey}`;
 
-    const cached = await getCache(cacheKey);
-    if (cached) {
-      return res.status(200).json(cached);
-    }
+    // const cached = await getCache(cacheKey);
+    // if (cached) {
+    //   return res.status(200).json(cached);
+    // }
 
     const {
       categoryId,
@@ -42,8 +43,7 @@ export async function getMenu(req: TypedRequest<{}, {}, {}>, res: Response) {
       includeUnavailable,
     } = parsedQuery;
 
-    const isAdminOrShop: boolean =
-      req.user?.role === "ADMIN" || req.user?.role === "SHOP";
+    const isAdminOrShop: boolean = req.user?.role === "RESTAURANT_OWNER";
 
     const searchText =
       typeof search === "string" && search.trim().length >= 2
@@ -51,6 +51,7 @@ export async function getMenu(req: TypedRequest<{}, {}, {}>, res: Response) {
         : undefined;
 
     const whereClause = {
+      restaurantId,
       ...(includeUnavailable && isAdminOrShop ? {} : { isAvailable: true }),
       ...(categoryId && { categoryId }),
       ...(foodType && { foodType }),
@@ -124,10 +125,11 @@ export async function createMenuItem(
   res: Response,
 ) {
   try {
+    const { id: restaurantId } = req.restaurant!;
     const { name, price, foodType, categoryId, description } = req.body;
 
     const category = await prisma.category.findUnique({
-      where: { id: categoryId },
+      where: { id: categoryId, restaurantId },
       select: { id: true },
     });
 
@@ -148,6 +150,7 @@ export async function createMenuItem(
         foodType,
         categoryId,
         image,
+        restaurantId,
       },
       select: {
         id: true,
@@ -176,11 +179,12 @@ export async function updateMenuItem(
 ) {
   try {
     const { id } = req.params;
+    const { id: restaurantId } = req.restaurant!;
     const { name, description, price, foodType, categoryId, isAvailable } =
       req.body;
 
     const item = await prisma.menuItem.findUnique({
-      where: { id },
+      where: { id, restaurantId },
       select: { id: true, image: true },
     });
 
@@ -188,13 +192,15 @@ export async function updateMenuItem(
       return res.status(404).json({ message: "Item not found" });
     }
 
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId },
-      select: { id: true },
-    });
+    if (categoryId !== undefined) {
+      const category = await prisma.category.findUnique({
+        where: { id: categoryId },
+        select: { id: true },
+      });
 
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
     }
 
     let newImage: string | undefined = undefined;
@@ -246,9 +252,10 @@ export async function deleteMenuItem(
 ) {
   try {
     const { id } = req.params;
+    const { id: restaurantId } = req.restaurant!;
 
     const item = await prisma.menuItem.findUnique({
-      where: { id },
+      where: { id, restaurantId },
       select: { id: true, image: true },
     });
 
@@ -256,15 +263,20 @@ export async function deleteMenuItem(
       return res.status(404).json({ message: "Item not found" });
     }
 
-    deleteFileByUrl(item.image);
+    const deleted = await prisma.menuItem.deleteMany({
+      where: { id, restaurantId },
+    });
 
-    await prisma.menuItem.delete({ where: { id } });
-    return res.status(200).json({ message: "Deleted successfully" });
-  } catch (error: any) {
-    if (error?.code === "P2025") {
+    if (deleted.count === 0) {
       return res.status(404).json({ message: "Item not found" });
     }
 
+    if (item.image) {
+      deleteFileByUrl(item.image);
+    }
+
+    return res.status(200).json({ message: "Deleted successfully" });
+  } catch (error) {
     console.log("DELETE_MENU_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
@@ -276,18 +288,15 @@ export async function getAllVariants(
 ) {
   try {
     const { menuItemId } = req.params;
-
-    const menuItem = await prisma.menuItem.findUnique({
-      where: { id: menuItemId },
-      select: { id: true },
-    });
-
-    if (!menuItem) {
-      return res.status(404).json({ message: "Menu item not found" });
-    }
+    const { id: restaurantId } = req.restaurant!;
 
     const variants = await prisma.menuVariant.findMany({
-      where: { menuItemId },
+      where: {
+        menuItemId,
+        menuItem: {
+          restaurantId,
+        },
+      },
       orderBy: { price: "asc" },
       select: {
         id: true,
@@ -296,6 +305,10 @@ export async function getAllVariants(
         menuItemId: true,
       },
     });
+
+    if (variants.length === 0) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
 
     return res
       .status(200)
@@ -313,9 +326,13 @@ export async function createVariant(
   try {
     const { menuItemId } = req.params;
     const { label, price } = req.body;
+    const { id: restaurantId } = req.restaurant!;
 
     const menuItem = await prisma.menuItem.findUnique({
-      where: { id: menuItemId },
+      where: {
+        id: menuItemId,
+        restaurantId,
+      },
       select: { id: true },
     });
 
@@ -357,11 +374,17 @@ export async function updateVariant(
 ) {
   try {
     const { menuItemId, variantId } = req.params;
-
     const { label, price } = req.body;
+    const { id: restaurantId } = req.restaurant!;
 
     const result = await prisma.menuVariant.updateMany({
-      where: { id: variantId, menuItemId },
+      where: {
+        id: variantId,
+        menuItemId,
+        menuItem: {
+          restaurantId,
+        },
+      },
       data: {
         ...(label !== undefined && { label }),
         ...(price !== undefined && { price: Number(price) }),
@@ -373,7 +396,12 @@ export async function updateVariant(
     }
 
     const updatedVariant = await prisma.menuVariant.findUnique({
-      where: { id: variantId },
+      where: {
+        id: variantId,
+        menuItem: {
+          restaurantId,
+        },
+      },
       select: {
         id: true,
         label: true,
@@ -402,9 +430,16 @@ export async function deleteVariant(
 ) {
   try {
     const { menuItemId, variantId } = req.params;
+    const { id: restaurantId } = req.restaurant!;
 
     const result = await prisma.menuVariant.deleteMany({
-      where: { id: variantId, menuItemId },
+      where: {
+        id: variantId,
+        menuItemId,
+        menuItem: {
+          restaurantId,
+        },
+      },
     });
 
     if (result.count === 0) {

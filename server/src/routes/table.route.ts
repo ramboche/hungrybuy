@@ -14,35 +14,39 @@ import {
   GenerateTableQrParams,
   ResolveQrParams,
 } from "../validation/table.schema";
+import { resolveTenant } from "../middlewares/restaurant.middleware";
 
 const router = Router();
 
-router.get("/", requireRole(["ADMIN", "SHOP"]), getAllTables);
+router.get("/", requireRole(["RESTAURANT_OWNER"]), resolveTenant, getAllTables);
 
 router.post(
   "/create",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(CreateTableBody),
+  resolveTenant,
   createTable,
 );
 
 router.delete(
   "/:id",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(DeleteTableParams, "params"),
+  resolveTenant,
   deleteTable,
 );
 
 router.get(
   "/:id/qr",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(GenerateTableQrParams, "params"),
+  resolveTenant,
   generateTableQr,
 );
 
 router.get(
   "/qr/:qrToken",
-  requireRole(["ADMIN", "SHOP", "USER"]),
+  requireRole(["CUSTOMER"]),
   validate(ResolveQrParams, "params"),
   resolveQr,
 );

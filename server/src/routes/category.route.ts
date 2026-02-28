@@ -11,23 +11,31 @@ import {
   DeleteCategoryParams,
 } from "../validation/category.schema";
 import { upload } from "../utils/upload";
+import { resolveTenant } from "../middlewares/restaurant.middleware";
 
 const router = Router();
 
-router.get("/", requireRole(["ADMIN", "SHOP", "USER"]), getAllCategories);
+router.get(
+  "/",
+  requireRole(["PLATFORM_ADMIN", "RESTAURANT_OWNER", "CUSTOMER"]),
+  resolveTenant,
+  getAllCategories,
+);
 
 router.post(
   "/create",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   upload.single("image"),
   validate(CreateCategoryBody),
+  resolveTenant,
   createCategory,
 );
 
 router.delete(
   "/:id",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(DeleteCategoryParams, "params"),
+  resolveTenant,
   deleteCategory,
 );
 

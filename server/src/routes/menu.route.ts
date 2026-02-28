@@ -25,67 +25,76 @@ import {
   UpdateVariantBody,
   UpdateVariantParams,
 } from "../validation/menu.schema";
+import { resolveTenant } from "../middlewares/restaurant.middleware";
 
 const router = Router();
 
 router.get(
   "/",
-  requireRole(["ADMIN", "SHOP", "USER"]),
+  requireRole(["PLATFORM_ADMIN", "RESTAURANT_OWNER", "CUSTOMER"]),
   validate(GetMenuQuery, "query"),
+  resolveTenant,
   getMenu,
 );
 
 router.post(
   "/create",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   upload.single("image"),
   validate(CreateMenuBody),
+  resolveTenant,
   createMenuItem,
 );
 
 router.patch(
   "/:id",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   upload.single("image"),
   validate(UpdateMenuItemParams, "params"),
   validate(UpdateMenuItemsBody),
+  resolveTenant,
   updateMenuItem,
 );
 
 router.delete(
   "/:id",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(DeleteMenuItemParams, "params"),
+  resolveTenant,
   deleteMenuItem,
 );
 
 router.get(
   "/:menuItemId/variants",
-  requireRole(["ADMIN", "SHOP", "USER"]),
+  requireRole(["PLATFORM_ADMIN", "RESTAURANT_OWNER", "CUSTOMER"]),
   validate(GetVariantParams, "params"),
+  resolveTenant,
   getAllVariants,
 );
 
 router.post(
   "/:menuItemId/variants",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(CreateVariantParams, "params"),
   validate(CreateVariantBody),
+  resolveTenant,
   createVariant,
 );
 
 router.patch(
   "/:menuItemId/variants/:variantId",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(UpdateVariantParams, "params"),
   validate(UpdateVariantBody),
+  resolveTenant,
   updateVariant,
 );
 
 router.delete(
   "/:menuItemId/variants/:variantId",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(DeleteVariantParams, "params"),
+  resolveTenant,
   deleteVariant,
 );
 

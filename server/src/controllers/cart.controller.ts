@@ -10,10 +10,15 @@ import {
 
 export async function getCart(req: TypedRequest, res: Response) {
   try {
-    const { id: tableId } = req.table!;
+    const { id: tableId, restaurantId } = req.table!;
 
     const cart = await prisma.cartItem.findMany({
-      where: { tableId },
+      where: {
+        tableId,
+        table: {
+          restaurantId,
+        },
+      },
       select: {
         id: true,
         quantity: true,
@@ -52,12 +57,18 @@ export async function addToCart(
   res: Response,
 ) {
   try {
-    const { id: tableId } = req.table!;
+    const { id: tableId, restaurantId } = req.table!;
     const { menuItemId, variantId, quantity } = req.body;
 
     const menuItem = await prisma.menuItem.findUnique({
-      where: { id: menuItemId },
-      select: { id: true, isAvailable: true },
+      where: {
+        id: menuItemId,
+        restaurantId,
+      },
+      select: {
+        id: true,
+        isAvailable: true,
+      },
     });
 
     if (!menuItem) {
@@ -65,7 +76,12 @@ export async function addToCart(
     }
 
     const variantCount = await prisma.menuVariant.count({
-      where: { menuItemId },
+      where: {
+        menuItemId,
+        menuItem: {
+          restaurantId,
+        },
+      },
     });
 
     if (variantCount > 0 && !variantId) {
@@ -96,6 +112,7 @@ export async function addToCart(
         tableId,
         menuItemId,
         variantId: variantId ?? null,
+        table: { restaurantId },
       },
       select: { id: true },
     });
@@ -178,15 +195,25 @@ export async function updateCart(
   res: Response,
 ) {
   try {
-    const { id: tableId } = req.table!;
+    const { id: tableId, restaurantId } = req.table!;
     const { cartId } = req.params;
     const { quantity } = req.body;
 
-    const cart = await prisma.cartItem.findUnique({
-      where: { id: cartId },
+    const cart = await prisma.cartItem.findFirst({
+      where: {
+        id: cartId,
+        tableId,
+        table: {
+          restaurantId,
+        },
+      },
       select: {
         tableId: true,
-        menuItem: { select: { isAvailable: true } },
+        menuItem: {
+          select: {
+            isAvailable: true,
+          },
+        },
       },
     });
 
@@ -194,22 +221,41 @@ export async function updateCart(
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    if (cart.tableId !== tableId) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-
-    if (!cart.menuItem || !cart.menuItem.isAvailable) {
+    if (!cart.menuItem?.isAvailable) {
       return res.status(400).json({ message: "Item is no longer present" });
     }
 
     if (quantity === 0) {
-      await prisma.cartItem.delete({ where: { id: cartId } });
+      await prisma.cartItem.deleteMany({
+        where: {
+          id: cartId,
+          tableId,
+          table: {
+            restaurantId,
+          },
+        },
+      });
+
       return res.status(200).json({ message: "Deleted successfully" });
     }
 
-    const updatedCart = await prisma.cartItem.update({
-      where: { id: cartId },
+    const updatedCart = await prisma.cartItem.updateMany({
+      where: {
+        id: cartId,
+        tableId,
+        table: {
+          restaurantId,
+        },
+      },
       data: { quantity },
+    });
+
+    if (updatedCart.count === 0) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    const finalCart = await prisma.cartItem.findUnique({
+      where: { id: cartId },
       select: {
         id: true,
         quantity: true,
@@ -218,7 +264,7 @@ export async function updateCart(
 
     return res
       .status(200)
-      .json({ message: "Updated successfully", data: { cart: updatedCart } });
+      .json({ message: "Updated successfully", data: { cart: finalCart } });
   } catch (error) {
     console.log("UPDATE_CART_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -230,11 +276,17 @@ export async function deleteCartItem(
   res: Response,
 ) {
   try {
-    const { id: tableId } = req.table!;
+    const { id: tableId, restaurantId } = req.table!;
     const { cartId } = req.params;
 
     const result = await prisma.cartItem.deleteMany({
-      where: { id: cartId, tableId },
+      where: {
+        id: cartId,
+        tableId,
+        table: {
+          restaurantId,
+        },
+      },
     });
 
     if (result.count === 0) {

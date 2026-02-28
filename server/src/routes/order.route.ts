@@ -12,21 +12,28 @@ import {
   UpdateOrderStatusBody,
 } from "../validation/order.schema";
 import { verifyTable } from "../middlewares/table.middleware";
+import { resolveTenant } from "../middlewares/restaurant.middleware";
 
 const router = Router();
 
-router.get("/all", requireRole(["ADMIN", "SHOP"]), getAllOrders);
+router.get(
+  "/all",
+  requireRole(["RESTAURANT_OWNER"]),
+  resolveTenant,
+  getAllOrders,
+);
 
-router.get("/active", requireRole(["USER"]), verifyTable, getActiveOrders);
+router.get("/active", requireRole(["CUSTOMER"]), verifyTable, getActiveOrders);
 
 router.patch(
   "/:orderId",
-  requireRole(["ADMIN", "SHOP"]),
+  requireRole(["RESTAURANT_OWNER"]),
   validate(UpdateOrderParams, "params"),
   validate(UpdateOrderStatusBody),
+  resolveTenant,
   updateOrderStatus,
 );
 
-router.post("/create", requireRole(["USER"]), verifyTable, createOrder);
+router.post("/create", requireRole(["CUSTOMER"]), verifyTable, createOrder);
 
 export default router;

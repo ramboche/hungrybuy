@@ -7,12 +7,13 @@ export async function storeSession(
   sessionId: string,
   userId: string,
   role: Role,
+  restaurantId: string | undefined,
 ) {
   const key = `session:${sessionId}`;
 
   await redis.set(
     key,
-    JSON.stringify({ userId, role }),
+    JSON.stringify({ userId, role, restaurantId }),
     "EX",
     ACCESS_TTL_SECONDS,
   );
@@ -27,6 +28,7 @@ export async function getSession(sessionId: string) {
   return JSON.parse(data) as {
     userId: string;
     role: Role;
+    restaurantId: string | undefined;
   };
 }
 

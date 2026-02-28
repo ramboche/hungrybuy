@@ -17,6 +17,7 @@ export function verifyTable(
     req.table = {
       id: payload.id,
       number: payload.number,
+      restaurantId: payload.restaurantId,
     };
 
     next();

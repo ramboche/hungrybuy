@@ -17,11 +17,11 @@ import { verifyTable } from "../middlewares/table.middleware";
 
 const router = Router();
 
-router.get("/", requireRole(["ADMIN", "SHOP", "USER"]), verifyTable, getCart);
+router.get("/", requireRole(["CUSTOMER"]), verifyTable, getCart);
 
 router.post(
   "/add",
-  requireRole(["USER"]),
+  requireRole(["CUSTOMER"]),
   verifyTable,
   validate(AddCartBody),
   addToCart,
@@ -29,7 +29,7 @@ router.post(
 
 router.patch(
   "/:cartId",
-  requireRole(["USER"]),
+  requireRole(["CUSTOMER"]),
   verifyTable,
   validate(UpdateCartParams, "params"),
   validate(UpdateCartBody),
@@ -38,7 +38,7 @@ router.patch(
 
 router.delete(
   "/:cartId",
-  requireRole(["USER"]),
+  requireRole(["CUSTOMER"]),
   verifyTable,
   validate(DeleteCartParams, "params"),
   deleteCartItem,

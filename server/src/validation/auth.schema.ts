@@ -28,13 +28,13 @@ export const AdminLoginBody = z.object({
 
 export type AdminLoginBody = z.infer<typeof AdminLoginBody>;
 
-export const CreateShopBody = z.object({
+export const CreateRestaurantBody = z.object({
   name: nameSchema,
   email: emailSchema,
   password: passwordSchema,
 });
 
-export type CreateShopBody = z.infer<typeof CreateShopBody>;
+export type CreateRestaurantBody = z.infer<typeof CreateRestaurantBody>;
 
 export const LoginUserBody = z.object({
   phone: phoneSchema,

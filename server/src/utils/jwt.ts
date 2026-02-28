@@ -18,6 +18,7 @@ export type JwtPayload = {
   id: string;
   role: Role;
   sessionId: string;
+  restaurantId: string | undefined;
 };
 
 export function signAccessToken(payload: JwtPayload): string {

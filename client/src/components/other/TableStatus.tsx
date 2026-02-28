@@ -1,5 +1,5 @@
 'use client';
-import { useCart } from '@/context/CartContext';
+import { useCart } from "@/hooks/useCart";
 import { QrCode } from 'lucide-react';
 
 export default function TableStatus() {

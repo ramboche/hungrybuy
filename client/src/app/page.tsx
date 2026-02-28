@@ -8,11 +8,11 @@ import ProductDialog from "@/components/ui/ProductDialog";
 import Loading from "@/components/other/Loading";
 import { Product, Category } from "@/lib/types";
 import { useState, useEffect, Suspense, useCallback, useRef } from "react";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart"
 import { api } from "@/lib/api";
 import QRHandler from "@/components/auth/QRHandler";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useApiAuthError } from "@/hooks/useApiAuthError";
 import { Loader2 } from "lucide-react";
 import SortBy from "@/components/ui/SortBy";

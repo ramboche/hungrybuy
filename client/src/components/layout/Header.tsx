@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import QRScannerModal from '@/components/auth/QRScannerModal';
 import { Search, QrCode, ShoppingCart } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '@/hooks/useCart';
 import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
@@ -18,10 +18,6 @@ export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
 
   const router = useRouter();
   const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    setIsTransitioning(false);
-  }, []);
 
   const handleSearchClick = () => {
     setIsTransitioning(true);

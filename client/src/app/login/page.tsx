@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { api } from "@/lib/api";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { AxiosError } from "axios";
 import PhoneStep from "./PhoneStep";
 import OtpStep from "./OtpStep";

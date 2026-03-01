@@ -37,8 +37,8 @@ export function verifyRefreshToken(token: string): JwtPayload {
   return jwt.verify(token, REFRESH_SECRET) as JwtPayload;
 }
 
-export function generateTableToken(table: TableContext): string {
-  return jwt.sign({ id: table.id, number: table.number }, TABLE_SECRET, {
+export function generateTableToken(payload: TableContext): string {
+  return jwt.sign(payload, TABLE_SECRET, {
     expiresIn: TABLE_EXPIRY,
   });
 }

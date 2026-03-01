@@ -16,9 +16,6 @@ export async function resolveTenant(
         where: { slug: host },
       });
 
-      console.log(host);
-      console.log(restaurant);
-
       if (restaurant) {
         req.restaurant = {
           id: restaurant.id,

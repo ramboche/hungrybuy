@@ -64,12 +64,12 @@ export async function getActiveOrders(req: TypedRequest, res: Response) {
             id: true,
             quantity: true,
             price: true,
-            menuItem: { select: { name: true } },
-            variant: { select: { label: true } },
+            menuItem: { select: { id: true, name: true } },
+            variant: { select: { id: true, label: true } },
           },
         },
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
     });
 
     return res

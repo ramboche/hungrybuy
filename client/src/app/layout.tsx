@@ -26,7 +26,7 @@ export default function RootLayout({
         <StoreProvider>
           <Toaster position="top-center" />
           {children}
-        </StoreProvider>y
+        </StoreProvider>
       </body>
     </html>
   );

@@ -6,7 +6,7 @@ interface CartHeaderProps {
 
 export default function CartHeader({ onBack }: CartHeaderProps) {
     return (
-        <div className="flex items-center justify-between px-6 py-5 shrink-0 relative">
+        <div className="flex items-center justify-between px-6 py-3 shrink-0 relative">
 
             <button
                 onClick={onBack}

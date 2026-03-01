@@ -36,7 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (isAuthenticated) {
       dispatch(fetchTables());
       dispatch(fetchCategories());
-      dispatch(fetchProducts());
+      dispatch(fetchProducts({ categoryId: "all" }));
       dispatch(fetchOrders());
     }
   }, [isAuthenticated, dispatch]);

@@ -16,20 +16,11 @@ import {
   UpdateVariantBody,
   UpdateVariantParams,
 } from "../validation/menu.schema";
-import { getCache, setCache } from "../utils/cache";
 
 export async function getMenu(req: TypedRequest<{}, {}, {}>, res: Response) {
   try {
     const { id: restaurantId } = req.restaurant!;
     const parsedQuery = GetMenuQuery.parse(req.query);
-
-    const queryKey = JSON.stringify(parsedQuery);
-    const cacheKey = `menu:${queryKey}`;
-
-    // const cached = await getCache(cacheKey);
-    // if (cached) {
-    //   return res.status(200).json(cached);
-    // }
 
     const {
       categoryId,
@@ -108,10 +99,6 @@ export async function getMenu(req: TypedRequest<{}, {}, {}>, res: Response) {
         },
       },
     };
-
-    if (!isAdminOrShop) {
-      await setCache(cacheKey, responsePayload, 60);
-    }
 
     return res.status(200).json(responsePayload);
   } catch (error) {

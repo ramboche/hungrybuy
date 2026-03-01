@@ -9,6 +9,7 @@ import {
     removeFromCartAction,
     placeOrderAction,
 } from "@/store/actions/cartAction";
+import { MenuItem, Variant } from "@/lib/types";
 
 export function useCart() {
     const dispatch = useAppDispatch();
@@ -27,8 +28,8 @@ export function useCart() {
     );
 
     const addToCart = useCallback(
-        async (menuItemId: string, quantity: number, variantId?: string) => {
-            await dispatch(addToCartAction(menuItemId, quantity, variantId));
+        async (menuItem: MenuItem, quantity: number, variant?: Variant) => {
+            await dispatch(addToCartAction(menuItem, quantity, variant));
         },
         [dispatch]
     );

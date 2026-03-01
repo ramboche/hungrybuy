@@ -2,27 +2,27 @@ export interface Category {
   id: string;
   name: string;
   image: string;
-  color?: string; 
+  color?: string;
 }
 
 export interface Variant {
   id: string;
-  label: string; 
+  label: string;
   price: number;
 }
 
-export interface Product {
+export type MenuItem = {
   id: string;
   name: string;
-  description: string;
-  price: number;    
+  description: string | null;
+  price: number | null;
   foodType: 'VEG' | 'NON_VEG';
   categoryId: string;
-  variants: Variant[]; 
-  image?: string; 
+  variants: Variant[];
+  image?: string | null;
   rating?: number;
   qty?: number;
-}
+};
 
 export interface BackendCartItem {
   id: string;
@@ -37,7 +37,7 @@ export interface BackendCartItem {
   variant?: {
     id: string;
     label: string;
-    price: number; 
+    price: number;
   } | null;
 }
 

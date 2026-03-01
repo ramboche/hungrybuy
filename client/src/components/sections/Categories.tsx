@@ -7,7 +7,7 @@ type FilterType = 'all' | 'veg' | 'non-veg';
 interface CategoriesProps {
   categories: Category[];
   selectedCategory: string;
-  onSelectCategory: (id: string) => void;
+  onClickCategory: (id: string) => void;
   activeDietFilter: FilterType
   onFilterChange: (filter: FilterType) => void;
 }
@@ -15,7 +15,7 @@ interface CategoriesProps {
 export default function Categories({
   categories,
   selectedCategory,
-  onSelectCategory,
+  onClickCategory,
   activeDietFilter,
   onFilterChange
 }: CategoriesProps) {
@@ -37,7 +37,7 @@ export default function Categories({
               name={cat.name}
               image={cat.image}
               isActive={selectedCategory === cat.id}
-              onClick={() => onSelectCategory(cat.id)}
+              onClick={() => onClickCategory(cat.id)}
             />
           </div>
         ))}

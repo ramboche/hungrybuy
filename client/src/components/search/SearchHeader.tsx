@@ -1,16 +1,15 @@
 'use client';
 
 import { ArrowLeft, Search, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
     query: string;
     setQuery: (val: string) => void;
+    onBack?: () => void;
 }
 
-export default function SearchHeader({ query, setQuery }: Props) {
-    const router = useRouter();
+export default function SearchHeader({ query, setQuery, onBack }: Props) {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const [isAnimating, setIsAnimating] = useState(true);
@@ -33,12 +32,12 @@ export default function SearchHeader({ query, setQuery }: Props) {
     return (
         <div className="bg-white sticky top-0 z-20 border-b border-gray-50">
             <div
-                className={`flex items-center gap-3 py-4 px-4 transition-all duration-50 ease-out transform
+                className={`flex items-center gap-3 py-4 px-4 transition-all duration-100 ease-out transform
                     ${isAnimating ? ' opacity-0' : 'opacity-100'}
                 `}
             >
                 <button
-                    onClick={() => router.back()}
+                    onClick={onBack}
                     className={`p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-opacity duration-300 delay-50 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
                 >
                     <ArrowLeft size={24} />

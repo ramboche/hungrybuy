@@ -1,4 +1,6 @@
+import { MenuItem } from "@/lib/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 
 export type Variant = {
     id: string;
@@ -6,16 +8,6 @@ export type Variant = {
     price: number;
 };
 
-export type MenuItem = {
-    id: string;
-    name: string;
-    price: number | null;
-    description: string | null;
-    isAvailable: boolean;
-    image?: string | null;
-    categoryId: string;
-    variants?: Variant[];
-};
 
 export type CartItem = {
     id: string;

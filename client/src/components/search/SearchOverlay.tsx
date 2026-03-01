@@ -4,19 +4,27 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import SearchHeader from '@/components/search/SearchHeader';
 import SearchResultCard from '@/components/search/SearchResultCard';
-import { Product } from '@/lib/types';
+import { MenuItem } from '@/lib/types';
 import { api } from '@/lib/api';
 
-export default function SearchPage() {
+interface SearchOverlayProps {
+    onClose: () => void;
+}
+
+export default function SearchOverlay({ onClose }: SearchOverlayProps) {
     const router = useRouter();
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<Product[]>([]);
+    const [results, setResults] = useState<MenuItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-
     const [pageLoaded, setPageLoaded] = useState(false);
 
     useEffect(() => {
-        const timer = setTimeout(() => setPageLoaded(true), 150);
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = 'unset'; };
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setPageLoaded(true), 50);
         return () => clearTimeout(timer);
     }, []);
 
@@ -26,16 +34,11 @@ export default function SearchPage() {
                 setResults([]);
                 return;
             }
-
             setIsLoading(true);
             try {
                 const res = await api.get('/menu', {
-                    params: {
-                        search: query.trim(),
-                        limit: 20,
-                    }
+                    params: { search: query.trim(), limit: 20 }
                 });
-
                 setResults(res.data.data.items || []);
             } catch (error) {
                 console.error("Search failed", error);
@@ -50,16 +53,18 @@ export default function SearchPage() {
     }, [query]);
 
     const handleResultClick = (categoryId: string, productId: string) => {
-        router.push(`/?categoryId=${categoryId}&highlight=${productId}`);
+        onClose();
+        router.replace(`/?categoryId=${categoryId}&highlight=${productId}`);
     };
 
     return (
-        <div className="min-h-dvh bg-gray-50 flex flex-col">
-            <SearchHeader query={query} setQuery={setQuery} />
+        <div className="fixed inset-0 z-50 bg-gray-50 flex flex-col animate-in fade-in duration-100 slide-in-from-bottom-2">
 
-            <div className={`flex-1 overflow-y-auto px-4 pt-4 pb-20 transition-opacity duration-500 ease-in-out
-          ${pageLoaded ? 'opacity-100' : 'opacity-0'}
-        `}>
+            <SearchHeader query={query} setQuery={setQuery} onBack={onClose} />
+
+            <div className={`flex-1 overflow-y-auto px-4 pt-4 pb-20 transition-opacity duration-300 ease-in-out
+               ${pageLoaded ? 'opacity-100' : 'opacity-0'}
+            `}>
                 {query.trim().length >= 2 && (
                     <p className="text-sm text-gray-500 mb-4 font-medium px-1">
                         {isLoading ? 'Searching...' : `Found ${results.length} results`}

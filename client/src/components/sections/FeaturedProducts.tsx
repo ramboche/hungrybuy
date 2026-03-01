@@ -1,12 +1,12 @@
 import ProductCard from "@/components/cards/ProductCard";
-import { Product } from "@/lib/types";
+import { MenuItem } from "@/lib/types";
 
 interface FeaturedProductsProps {
-  products: Product[];
+  products: MenuItem[];
   isLoading: boolean;
   getProductTotalQty: (id: string) => number;
-  onAddClick: (product: Product) => void;
-  onIncrease: (product: Product) => void;
+  onAddClick: (product: MenuItem) => void;
+  onIncrease: (product: MenuItem) => void;
   onDecrease: (productId: string) => void;
   onClearFilters: () => void;
 }

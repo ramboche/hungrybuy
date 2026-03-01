@@ -4,27 +4,27 @@ import { useState } from 'react';
 import QRScannerModal from '@/components/auth/QRScannerModal';
 import { Search, QrCode, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
-import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   cartCount?: number;
   onCartClick?: () => void;
+  onSearchOpen?: () => void;
 }
 
-export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
+export default function Header({ cartCount = 0, onCartClick, onSearchOpen}: HeaderProps) {
 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const { tableToken, tableNo, resolveTableFromToken } = useCart();
 
-  const router = useRouter();
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleSearchClick = () => {
     setIsTransitioning(true);
-
     setTimeout(() => {
-      router.push('/search');
-    }, 150);
+      if (onSearchOpen) onSearchOpen();
+
+      setIsTransitioning(false);
+    }, 50);
   };
 
   const handleScan = async (scannedUrl: string) => {

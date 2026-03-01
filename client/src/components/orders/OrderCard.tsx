@@ -1,6 +1,8 @@
 'use client';
 
 import { useCart } from '@/hooks/useCart';
+import { Variant } from '@/lib/types';
+import { MenuItem } from '@/lib/types';
 import { useState } from 'react';
 
 export interface BackendOrder {
@@ -12,8 +14,8 @@ export interface BackendOrder {
         id: string;
         quantity: number;
         price: number;
-        menuItem: { id: string; name: string };
-        variant: { id: string; label: string } | null;
+        menuItem: MenuItem;
+        variant: Variant | null;
     }[];
 }
 
@@ -27,7 +29,7 @@ export default function OrderCard({ order, onActiveTabChange }: { order: Backend
             console.log(order)
             for (const item of order.items) {
                 console.log(item)
-                await addToCart(item.menuItem.id, item.quantity, item.variant?.id);
+                await addToCart(item.menuItem, item.quantity, item.variant || undefined);
             }
         } finally {
             setIsAdding(false);

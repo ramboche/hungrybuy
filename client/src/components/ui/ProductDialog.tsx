@@ -2,12 +2,12 @@
 
 import { X } from 'lucide-react';
 import Image from 'next/image';
-import { Product } from '@/lib/types';
+import { MenuItem } from '@/lib/types';
 import QuantityBtn from './QuantityButton';
 import { useState } from 'react';
 
 interface Props {
-  product: Product | null;
+  product: MenuItem | null;
   isOpen: boolean;
   onClose: () => void;
   initialData: Record<string, number>;

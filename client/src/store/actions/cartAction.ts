@@ -6,11 +6,12 @@ import {
     updateCartItemOptimistic,
     removeCartItemOptimistic,
     clearCart,
-    CartItem
+    CartItem,
 } from "../slices/cartSlice";
 import { api } from "@/lib/api";
 import { toast } from "react-hot-toast";
 import { AxiosError } from "axios";
+import { MenuItem, Variant } from "@/lib/types";
 
 const updateApiToken = (token: string | null) => {
     if (token) {
@@ -62,7 +63,7 @@ export const resolveTableAction = (token: string) => async (dispatch: AppDispatc
     }
 };
 
-export const addToCartAction = (menuItemId: string, quantity: number, variantId?: string) =>
+export const addToCartAction = (menuItem: MenuItem, quantity: number, variant?: Variant) =>
     async (dispatch: AppDispatch, getState: () => RootState) => {
 
         const { tableToken, cart } = getState().cart;
@@ -72,34 +73,55 @@ export const addToCartAction = (menuItemId: string, quantity: number, variantId?
             return;
         }
 
+        const previousCart = [...cart];
+
+        const existingItem = cart.find(
+            (item) => item.menuItem.id === menuItem.id && item.variant?.id === variant?.id
+        );
+
+        const finalQuantity = existingItem ? existingItem.quantity + quantity : quantity;
+
+        const tempId = `temp-${Date.now()}`;
+
+        if (existingItem) {
+            dispatch(updateCartItemOptimistic({
+                cartItemId: existingItem.id,
+                quantity: finalQuantity
+            }));
+        } else {
+            const fakeCartItem = {
+                id: tempId,
+                quantity: finalQuantity,
+                menuItem: menuItem,
+                variant: variant || null,
+            } as CartItem;
+
+            dispatch(setCart([...cart, fakeCartItem]));
+        }
+
         try {
-            const existingItem = cart.find(
-                (item) => item.menuItem.id === menuItemId && item.variant?.id === variantId
-            );
-
-            const finalQuantity = existingItem ? existingItem.quantity + quantity : quantity;
-
             const res = await api.post(`/cart/add`, {
-                menuItemId,
-                variantId,
+                menuItemId: menuItem.id,
+                variantId: variant?.id,
                 quantity: finalQuantity,
             });
 
-            const receivedItem: CartItem = res.data.data.item;
+            const officialItem: CartItem = res.data.data.item;
 
-            const existingIndex = cart.findIndex(item => item.id === receivedItem.id);
-            let newCart = [...cart];
+            const currentCart = getState().cart.cart;
 
-            if (existingIndex > -1) {
-                newCart[existingIndex] = receivedItem;
-            } else {
-                newCart = [...newCart, receivedItem];
-            }
+            const newCart = currentCart.map(item => {
+                if (item.id === tempId || item.id === officialItem.id) {
+                    return officialItem;
+                }
+                return item;
+            });
 
             dispatch(setCart(newCart));
-            toast.success("Added to cart!");
 
         } catch (error) {
+            dispatch(setCart(previousCart));
+
             const err = error as AxiosError<{ message: string }>;
             toast.error(err.response?.data?.message || "Failed to add item");
         }

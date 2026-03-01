@@ -2,10 +2,11 @@
 
 import Image from 'next/image';
 import RatingBadge from '../ui/RatingBadge';
-import { Product } from '@/lib/types';
+import { MenuItem } from '@/lib/types';
+import QuantityBtn from '../ui/QuantityButton';
 
 interface Props {
-  product: Product;
+  product: MenuItem;
   cartQty: number;
   onAddClick: () => void;
   onIncrease: () => void;
@@ -31,7 +32,6 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
   return (
     <div id={`product-${product.id}`} className="bg-white rounded-3xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-50 flex flex-col w-full group">
 
-      {/* 🔴 Top Section: Large Image & Overlays */}
       <div className="relative w-full h-48 sm:h-56 bg-gray-100 overflow-hidden shrink-0">
         <Image
           src={imageUrl || '/images/burgers.jpeg'}
@@ -75,45 +75,12 @@ export default function ProductCard({ product, cartQty, onAddClick, onIncrease, 
           </span>
 
           {/* Action Button Area */}
-          <div className="relative w-29 h-10 flex items-center justify-end">
-
-            <div
-              className={`absolute right-0 flex items-center gap-3 bg-brand-orange-light rounded-xl p-1 border border-brand-orange/10 transition-all duration-300 ease-out origin-right
-                ${cartQty > 0 ? 'opacity-100 scale-100 translate-x-0' : 'opacity-0 scale-75 translate-x-4 pointer-events-none'}
-              `}
-            >
-              <button
-                onClick={handleCounterDecrease}
-                className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-gray-700 active:scale-90 transition-transform font-bold"
-              >
-                -
-              </button>
-
-              <span className="text-sm font-bold w-4 text-center text-brand-orange">
-                {cartQty > 0 ? cartQty : 1}
-              </span>
-
-              <button
-                onClick={handleCounterClick}
-                className="w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center shadow-sm text-white active:scale-90 transition-transform font-bold"
-              >
-                +
-              </button>
-            </div>
-            <div
-              className={`absolute right-0 transition-all duration-300 ease-out origin-right
-                ${cartQty > 0 ? 'opacity-0 scale-75 translate-x-4 pointer-events-none' : 'opacity-100 scale-100 translate-x-0'}
-              `}
-            >
-              <button
-                onClick={onAddClick}
-                className="px-5 h-10 bg-brand-orange-light text-brand-orange rounded-xl font-bold text-sm flex items-center gap-1 hover:bg-[#faeae0] active:scale-95 transition-all"
-              >
-                Add <span className="text-lg leading-none font-medium">+</span>
-              </button>
-            </div>
-
-          </div>
+          <QuantityBtn
+            count={cartQty}
+            onIncrease={handleCounterClick}
+            onDecrease={handleCounterDecrease}
+            onAddClick={onAddClick}
+          />
         </div>
 
       </div>

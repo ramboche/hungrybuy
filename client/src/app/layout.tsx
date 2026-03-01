@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
-import { CartProvider } from "@/context/CartContext";
+import StoreProvider from "@/components/providers/StoreProvider";
 
 // Configure the font
-const poppins = Poppins({ 
+const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"], // Regular, Medium, SemiBold, Bold
 });
@@ -24,13 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={poppins.className}>
-        {/* WRAP CHILDREN IN AUTHPROVIDER */}
-        <AuthProvider>
-          <CartProvider>
+        <StoreProvider>
+          <Toaster position="top-center" />
           {children}
-          <Toaster position="top-center" /> {/* This shows the success/error popups */}
-          </CartProvider>
-        </AuthProvider>
+        </StoreProvider>y
       </body>
     </html>
   );

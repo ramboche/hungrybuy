@@ -1,9 +1,9 @@
 "use client";
 
 import CartPage from "@/components/cart/CartPage";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import Loading from "@/components/other/Loading";
 

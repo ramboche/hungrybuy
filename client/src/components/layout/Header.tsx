@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import QRScannerModal from '@/components/auth/QRScannerModal';
 import { Search, QrCode, ShoppingCart } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '@/hooks/useCart';
 import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
@@ -18,10 +18,6 @@ export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
 
   const router = useRouter();
   const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    setIsTransitioning(false);
-  }, []);
 
   const handleSearchClick = () => {
     setIsTransitioning(true);
@@ -112,7 +108,7 @@ export default function Header({ cartCount = 0, onCartClick }: HeaderProps) {
           `}
         >
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-brand-orange transition-colors" size={18} />
-          <div className="w-full h-10 bg-[#F6F6F6] rounded-xl flex items-center pl-10 pr-4 text-base text-gray-400 border border-transparent group-hover:border-brand-orange transition-all font-medium">
+          <div className="w-full h-10 bg-gray-50 rounded-xl flex items-center pl-10 pr-4 text-base text-gray-400 border border-transparent group-hover:border-brand-orange transition-all font-medium">
             Search for dishes, drinks...
           </div>
         </div>

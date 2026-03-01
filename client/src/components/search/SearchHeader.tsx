@@ -52,7 +52,7 @@ export default function SearchHeader({ query, setQuery }: Props) {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search for dishes, drinks..."
-                        className="w-full h-10 bg-gray-50 rounded-xl pl-10 pr-10 text-base font-medium text-gray-900 outline-none focus:ring-1 focus:ring-brand-orange/20 transition-all shadow-inner"
+                        className="w-full h-10 bg-gray-50 rounded-xl pl-10 pr-10 text-base font-medium text-gray-600 outline-none focus:ring-1 focus:ring-brand-orange/20 transition-all shadow-inner"
                     />
                     {query && (
                         <button

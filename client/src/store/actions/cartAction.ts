@@ -110,14 +110,28 @@ export const addToCartAction = (menuItem: MenuItem, quantity: number, variant?: 
 
             const currentCart = getState().cart.cart;
 
+            const targetId = existingItem ? existingItem.id : tempId;
+            const itemInCurrentState = currentCart.find(
+                (i) => i.id === targetId || i.id === officialItem.id
+            );
+
+            const latestQuantity = itemInCurrentState ? itemInCurrentState.quantity : finalQuantity;
+
             const newCart = currentCart.map(item => {
                 if (item.id === tempId || item.id === officialItem.id) {
-                    return officialItem;
+                    return {
+                        ...officialItem,
+                        quantity: latestQuantity
+                    };
                 }
                 return item;
             });
 
             dispatch(setCart(newCart));
+
+            if (!existingItem && latestQuantity !== finalQuantity) {
+                dispatch(updateQuantityAction(officialItem.id, latestQuantity));
+            }
 
         } catch (error) {
             dispatch(setCart(previousCart));
@@ -136,6 +150,10 @@ export const updateQuantityAction = (cartItemId: string, newQuantity: number) =>
 
         dispatch(updateCartItemOptimistic({ cartItemId, quantity: newQuantity }));
 
+        if (cartItemId.startsWith("temp-")) {
+            return;
+        }
+
         try {
             await api.patch(`/cart/${cartItemId}`, { quantity: newQuantity });
         } catch (error) {
@@ -148,6 +166,10 @@ export const updateQuantityAction = (cartItemId: string, newQuantity: number) =>
 
 export const removeFromCartAction = (cartItemId: string) => async (dispatch: AppDispatch, getState: () => RootState) => {
     dispatch(removeCartItemOptimistic(cartItemId));
+
+    if (cartItemId.startsWith("temp-")) {
+        return;
+    }
 
     try {
         await api.delete(`/cart/${cartItemId}`);

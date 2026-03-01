@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "@/lib/api";
 import { MenuItem, Category } from "@/lib/types";
 
@@ -32,12 +32,13 @@ export const useCategories = (user: any, handleAuthError: any) => {
 
         if (!globalCache.categories) {
             fetchCategories();
-        } 
+        }
     }, [user, handleAuthError]);
 
     return categories;
 };
 
+// --- HOOK 2: MENU PRODUCTS ---
 export const useMenu = (
     user: any,
     selectedCategory: string,
@@ -49,6 +50,12 @@ export const useMenu = (
     const cacheKey = generateCacheKey(selectedCategory, dietFilter, debouncedSearchQuery, sortOrder);
 
     const cachedData = globalCache.menu[cacheKey];
+
+    const activeCacheKeyRef = useRef(cacheKey);
+
+    useEffect(() => {
+        activeCacheKeyRef.current = cacheKey;
+    }, [cacheKey]);
 
     const [products, setProducts] = useState<MenuItem[]>(cachedData?.items || []);
     const [nextCursor, setNextCursor] = useState<string | null>(cachedData?.nextCursor || null);
@@ -85,25 +92,34 @@ export const useMenu = (
                     qty: 42,
                 }));
 
-                setProducts((prev) => {
-                    const newProducts = isLoadMore ? [...prev, ...readyProducts] : readyProducts;
+                const currentCachedItems = globalCache.menu[cacheKey]?.items || [];
+                const newProducts = isLoadMore ? [...currentCachedItems, ...readyProducts] : readyProducts;
 
-                    globalCache.menu[cacheKey] = {
-                        items: newProducts,
-                        nextCursor: data.pagination.nextCursor,
-                        hasNextPage: data.pagination.hasNextPage,
-                    };
 
-                    return newProducts;
-                });
+                globalCache.menu[cacheKey] = {
+                    items: newProducts,
+                    nextCursor: data.pagination.nextCursor,
+                    hasNextPage: data.pagination.hasNextPage,
+                };
 
+
+                if (activeCacheKeyRef.current !== cacheKey) {
+                    return;
+                }
+
+                setProducts(newProducts);
                 setNextCursor(data.pagination.nextCursor);
                 setHasNextPage(data.pagination.hasNextPage);
+
             } catch (error) {
-                handleAuthError(error, "Failed to load menu");
+                if (activeCacheKeyRef.current === cacheKey) {
+                    handleAuthError(error, "Failed to load menu");
+                }
             } finally {
-                setIsMenuLoading(false);
-                setIsFetchingMore(false);
+                if (activeCacheKeyRef.current === cacheKey) {
+                    setIsMenuLoading(false);
+                    setIsFetchingMore(false);
+                }
             }
         },
         [user, cacheKey, selectedCategory, dietFilter, debouncedSearchQuery, sortOrder, handleAuthError]

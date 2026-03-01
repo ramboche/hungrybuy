@@ -34,6 +34,12 @@ router.patch(
   updateOrderStatus,
 );
 
-router.post("/create", requireRole(["CUSTOMER"]), verifyTable, createOrder);
+router.post(
+  "/create",
+  requireRole(["CUSTOMER"]),
+  verifyTable,
+  resolveTenant,
+  createOrder,
+);
 
 export default router;

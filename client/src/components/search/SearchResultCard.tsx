@@ -1,9 +1,9 @@
 'use client';
 
-import { Product } from '@/lib/types';
+import { MenuItem } from '@/lib/types';
 
 interface Props {
-    product: Product;
+    product: MenuItem;
     onClick: (categoryId: string, productId: string) => void;
 }
 

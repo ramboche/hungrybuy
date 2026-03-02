@@ -14,7 +14,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 let isRefreshing = false;
 let failedQueue: FailedQueueItem[] = [];
 
-const processQueue = (error: AxiosError | Error | null, token: string | null = null) => {
+const processQueue = (
+  error: AxiosError | Error | null,
+  token: string | null = null,
+) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -66,14 +69,14 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!refreshToken) throw new Error("No refresh token");
-
-        const res = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
-        const { accessToken, refreshToken: newRefreshToken } = res.data.data;
+        const res = await axios.post(
+          `${API_URL}/auth/refresh`,
+          {},
+          { withCredentials: true },
+        );
+        const { accessToken } = res.data.data;
 
         localStorage.setItem("accessToken", accessToken);
-        if (newRefreshToken) localStorage.setItem("refreshToken", newRefreshToken);
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         processQueue(null, accessToken);
@@ -91,5 +94,5 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );

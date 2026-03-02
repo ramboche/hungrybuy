@@ -8,7 +8,7 @@ import {
   verifyAccessToken,
 } from "../utils/jwt";
 import { TypedRequest } from "../types/request";
-import { LoginUserBody, RefreshTokenBody } from "../validation/auth.schema";
+import { LoginUserBody } from "../validation/auth.schema";
 import { hashToken } from "../utils/hash";
 import { deleteSession } from "../lib/session";
 
@@ -67,11 +67,18 @@ export async function loginUser(
       },
     });
 
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/auth/refresh",
+      maxAge: 60 * 1000,
+    });
+
     return res.status(200).json({
       message: "Login successful",
       data: { user: { name: user.name, phone: user.phone } },
       accessToken,
-      refreshToken,
     });
   } catch (error) {
     console.log("AUTH_LOGIN_ERROR:", error);
@@ -79,12 +86,9 @@ export async function loginUser(
   }
 }
 
-export async function refreshToken(
-  req: TypedRequest<{}, RefreshTokenBody, {}>,
-  res: Response,
-) {
+export async function refreshToken(req: TypedRequest, res: Response) {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken;
 
     const session = await prisma.authSession.findFirst({
       where: {
@@ -135,9 +139,17 @@ export async function refreshToken(
       },
     });
 
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/auth/refresh",
+      maxAge: 7 * 24 * 40 * 60 * 1000,
+    });
+
     return res.status(200).json({
       message: "Token refreshed successfully",
-      data: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+      data: { accessToken: newAccessToken },
     });
   } catch (error) {
     console.log("AUTH_REFRESH_TOKEN_ERROR:", error);

@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
 import { httpLogger } from "./lib/httpLogger";
@@ -26,6 +27,7 @@ export function startServer() {
 
   app.disable("x-powered-by");
 
+  app.use(cookieParser());
   app.use(express.json({ limit: "10kb" }));
   app.use(
     cors({

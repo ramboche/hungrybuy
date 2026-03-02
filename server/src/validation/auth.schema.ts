@@ -48,9 +48,3 @@ export const SendOtpBody = z.object({
 });
 
 export type SendOtpBody = z.infer<typeof SendOtpBody>;
-
-export const RefreshTokenBody = z.object({
-  refreshToken: z.string().trim().min(10).max(500),
-});
-
-export type RefreshTokenBody = z.infer<typeof RefreshTokenBody>;

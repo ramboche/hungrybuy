@@ -20,47 +20,9 @@ import {
 export async function getMenu(req: TypedRequest<{}, {}, {}>, res: Response) {
   try {
     const { id: restaurantId } = req.restaurant!;
-    const parsedQuery = GetMenuQuery.parse(req.query);
-
-    const {
-      categoryId,
-      foodType,
-      search,
-      cursor,
-      limit,
-      sortBy,
-      sortOrder,
-      minRating,
-      includeUnavailable,
-    } = parsedQuery;
-
-    const isAdminOrShop: boolean = req.user?.role === "RESTAURANT_OWNER";
-
-    const searchText =
-      typeof search === "string" && search.trim().length >= 2
-        ? search.trim()
-        : undefined;
-
-    const whereClause = {
-      restaurantId,
-      ...(includeUnavailable && isAdminOrShop ? {} : { isAvailable: true }),
-      ...(categoryId && { categoryId }),
-      ...(foodType && { foodType }),
-      ...(minRating !== undefined && { rating: { gte: minRating } }),
-      ...(searchText && {
-        name: { contains: searchText, mode: "insensitive" as const },
-      }),
-    };
-
-    const orderBy: any = {
-      [sortBy]: sortOrder,
-    };
 
     const items = await prisma.menuItem.findMany({
-      where: whereClause,
-      take: limit + 1,
-      ...(cursor && { skip: 1, cursor: { id: cursor } }),
-      orderBy: [orderBy, { id: "asc" }],
+      where: { restaurantId },
       select: {
         id: true,
         name: true,
@@ -83,21 +45,9 @@ export async function getMenu(req: TypedRequest<{}, {}, {}>, res: Response) {
       },
     });
 
-    let nextCursor: string | null = null;
-    if (items.length > limit) {
-      const nextItem = items.pop();
-      nextCursor = nextItem!.id;
-    }
-
     const responsePayload = {
       message: "Fetched all menu items",
-      data: {
-        items,
-        pagination: {
-          nextCursor,
-          hasNextPage: !!nextCursor,
-        },
-      },
+      data: { items },
     };
 
     return res.status(200).json(responsePayload);

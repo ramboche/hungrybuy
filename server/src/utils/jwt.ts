@@ -4,7 +4,7 @@ import { TableContext } from "../types/request";
 
 const ACCESS_SECRET: Secret = process.env.ACCESS_SECRET as Secret;
 const ACCESS_EXPIRY: SignOptions["expiresIn"] =
-  (process.env.ACCESS_EXPIRY as SignOptions["expiresIn"]) || "15m";
+  (process.env.ACCESS_EXPIRY as SignOptions["expiresIn"]) || "1m";
 
 const REFRESH_SECRET: Secret = process.env.REFRESH_SECRET as Secret;
 const REFRESH_EXPIRY: SignOptions["expiresIn"] =

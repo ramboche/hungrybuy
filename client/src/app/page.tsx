@@ -6,8 +6,8 @@ import Categories from "@/components/sections/Categories";
 import FeaturedProducts from "@/components/sections/FeaturedProducts";
 import ProductDialog from "@/components/ui/ProductDialog";
 import Loading from "@/components/other/Loading";
-import { MenuItem } from "@/lib/types"; 
-import { useState, useEffect, Suspense, useRef } from "react";
+import { MenuItem } from "@/lib/types";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import { useCart } from "@/hooks/useCart";
 import QRHandler from "@/components/auth/QRHandler";
 import { useRouter } from "next/navigation";
@@ -17,8 +17,9 @@ import { Loader2 } from "lucide-react";
 import SortBy from "@/components/ui/SortBy";
 import HomeSearchHandler from "@/components/search/HomeSearchHandler";
 import SearchOverlay from "@/components/search/SearchOverlay";
+import { api } from "@/lib/api";
 
-import { useCategories, useMenu } from "@/hooks/useMenuCache";
+import { useCategories } from "@/hooks/useMenuCache";
 
 export default function Home() {
   const [tableParam, setTableParam] = useState<string | null>(null);
@@ -30,7 +31,6 @@ export default function Home() {
   const { handleAuthError } = useApiAuthError();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
 
   const [dietFilter, setDietFilter] = useState<"all" | "veg" | "non-veg">("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -42,24 +42,66 @@ export default function Home() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null);
 
+  const [allProducts, setAllProducts] = useState<MenuItem[]>([]);
+  const [isMenuLoading, setIsMenuLoading] = useState(true);
+
 
   const categories = useCategories(user, handleAuthError);
 
-  const {
-    products,
-    nextCursor,
-    hasNextPage,
-    isMenuLoading,
-    isFetchingMore,
-    fetchMenu,
-  } = useMenu(
-    user,
-    selectedCategory,
-    dietFilter,
-    debouncedSearchQuery,
-    sortOrder,
-    handleAuthError
-  );
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchFullMenu = async () => {
+      try {
+        setIsMenuLoading(true);
+        const res = await api.get("/menu");
+
+        const dbProducts = res.data.data.items.map((p: MenuItem) => ({
+          ...p,
+          qty: 42,
+        }));
+
+        setAllProducts(dbProducts);
+      } catch (error) {
+        handleAuthError(error, "Failed to load full menu");
+      } finally {
+        setIsMenuLoading(false);
+      }
+    };
+
+    fetchFullMenu();
+  }, [user, handleAuthError]);
+
+  const displayedProducts = useMemo(() => {
+    let filtered = [...allProducts];
+
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((p) => p.categoryId === selectedCategory);
+    }
+
+    if (dietFilter !== "all") {
+      const dietValue = dietFilter === "veg" ? "VEG" : "NON_VEG";
+      filtered = filtered.filter((p) => p.foodType === dietValue);
+    }
+
+    if (debouncedSearchQuery.trim().length >= 2) {
+      const query = debouncedSearchQuery.toLowerCase();
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(query) ||
+        (p.description && p.description.toLowerCase().includes(query))
+      );
+    }
+
+    if (sortOrder !== "popular") {
+      filtered.sort((a, b) => {
+        if (sortOrder === "asc") return a.price! - b.price!;
+        if (sortOrder === "desc") return b.price! - a.price!;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [allProducts, selectedCategory, dietFilter, debouncedSearchQuery, sortOrder]);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -87,23 +129,6 @@ export default function Home() {
     }, 400);
     return () => clearTimeout(timer);
   }, [searchQuery]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingMore) {
-          fetchMenu(true, nextCursor);
-        }
-      },
-      { threshold: 1.0 },
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingMore, fetchMenu, nextCursor]);
 
   useEffect(() => {
     if (categoryIdFromUrl) {
@@ -207,7 +232,7 @@ export default function Home() {
     selectedCategory === "all"
       ? "All Products"
       : categories.find((c) => c.id === selectedCategory)?.name || "Products";
-      
+
   return (
     <main className="h-dvh w-full bg-white relative flex flex-col overflow-hidden">
       <Suspense fallback={null}>
@@ -262,7 +287,7 @@ export default function Home() {
         {/* 5. Products List */}
         <div className="px-4 sm:px-6 pb-28">
           <FeaturedProducts
-            products={products}
+            products={displayedProducts}
             isLoading={isMenuLoading}
             getProductTotalQty={getProductTotalQty}
             onAddClick={handleCardAddClick}
@@ -274,13 +299,6 @@ export default function Home() {
               setSearchQuery("");
             }}
           />
-
-          {/* Infinite Scroll Loader */}
-          <div ref={observerTarget} className="w-full h-10 mt-6 flex justify-center items-center">
-            {isFetchingMore && (
-              <Loader2 className="animate-spin text-brand-orange" size={24} />
-            )}
-          </div>
         </div>
       </div>
 

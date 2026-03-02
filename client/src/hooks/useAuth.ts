@@ -13,8 +13,8 @@ export function useAuth() {
     const authState = useAppSelector((state) => state.auth);
 
     const handleLogin = useCallback(
-        (accessToken: string, refreshToken: string, userData: User) => {
-            dispatch(loginAction(accessToken, refreshToken, userData));
+        (accessToken: string, userData: User) => {
+            dispatch(loginAction(accessToken, userData));
             router.refresh();
         },
         [dispatch, router]

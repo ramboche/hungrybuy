@@ -50,10 +50,10 @@ export default function LoginPage() {
   const handleVerifyOtp = async (otp: string) => {
     setIsLoading(true);
     try {
-      const res = await api.post("/auth/login", { phone: phoneNumber, otp });
+      const res = await api.post("/auth/login", { phone: phoneNumber, otp }, { withCredentials: true });
 
-      const { accessToken, refreshToken, data } = res.data;
-      login(accessToken, refreshToken, data.user);
+      const { accessToken, data } = res.data;
+      login(accessToken, data.user);
 
       toast.success("Login Successful!");
       router.push("/");

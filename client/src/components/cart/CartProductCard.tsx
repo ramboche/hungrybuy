@@ -23,7 +23,6 @@ export default function CartProductCard({ item, onIncrease, onDecrease }: CartPr
                     alt={item.menuItem.name}
                     fill
                     className="object-cover"
-                    unoptimized={true}
                 />
             </div>
 

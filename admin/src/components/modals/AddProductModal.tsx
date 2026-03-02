@@ -169,7 +169,6 @@ export default function AddProductModal({ isOpen, onClose, onSave, categories, i
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      unoptimized={true}
                     />
                   </div>
                 ) : (

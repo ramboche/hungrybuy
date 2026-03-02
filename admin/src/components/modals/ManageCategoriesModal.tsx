@@ -132,7 +132,6 @@ export default function ManageCategoriesModal({ isOpen, onClose, categories, onA
                              alt={cat.name} 
                              fill 
                              className="object-cover"
-                             unoptimized 
                            />
                          ) : (
                            <Hash size={16} />

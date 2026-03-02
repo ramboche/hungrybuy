@@ -176,7 +176,7 @@ export async function logout(req: TypedRequest, res: Response) {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
       path: "/auth/refresh",
     });
 

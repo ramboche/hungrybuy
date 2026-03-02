@@ -25,7 +25,6 @@ export default function MenuRow({ product, onEdit, onDelete }: Props) {
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
-            unoptimized={true}
           />
         </div>
       </div>

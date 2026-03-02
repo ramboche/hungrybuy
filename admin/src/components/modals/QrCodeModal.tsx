@@ -104,7 +104,6 @@ export default function QrCodeModal({ isOpen, onClose, table }: Props) {
                 width={192}
                 height={192}
                 className="object-contain rounded-lg border border-gray-100 shadow-sm"
-                unoptimized = {true} 
               />
             </div>
           ) : (

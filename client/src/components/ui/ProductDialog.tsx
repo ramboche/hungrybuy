@@ -54,7 +54,7 @@ export default function ProductDialog({ product, isOpen, onClose, initialData, o
           <div className="flex justify-between items-start">
             <div className="flex gap-4">
               <div className="w-16 h-16 relative rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
-                <Image src={imageUrl || '/images/burgers.jpeg'} alt={product.name} fill className="object-cover" unoptimized={true} />
+                <Image src={imageUrl || '/images/burgers.jpeg'} alt={product.name} fill className="object-cover" />
               </div>
               <div>
                 <h3 className="font-bold text-lg sm:text-xl text-brand-dark leading-tight pr-4">{product.name}</h3>

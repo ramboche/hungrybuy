@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Plus } from 'lucide-react';
 import { RootState, AppDispatch } from '@/lib/store/store';
-import { addCategory, deleteCategory } from '@/lib/store/features/categorySlice';
+import { addCategory, deleteCategory, updateCategory } from '@/lib/store/features/categorySlice';
 import { addProduct, updateProduct, deleteProduct, fetchProducts, setActiveCategory } from '@/lib/store/features/menuSlice';
 import { Product } from '@/lib/types';
 
@@ -66,6 +66,18 @@ export default function MenuPage() {
     dispatch(setActiveCategory(categoryId));
   };
 
+  const handleEditCategory = async (id: string, formData: FormData) => {
+    try {
+      const resultAction = await dispatch(updateCategory({ id, formData }));
+
+      if (updateCategory.rejected.match(resultAction)) {
+        alert("Failed to update category.");
+      }
+    } catch (error) {
+      console.error("Failed to edit category", error);
+    }
+  };
+
   return (
     <main className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       <div className="animate-in fade-in zoom-in duration-300">
@@ -98,7 +110,7 @@ export default function MenuPage() {
       </button>
 
       <AddProductModal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)} onSave={handleSaveProduct} categories={categories} initialData={editingProduct} />
-      <ManageCategoriesModal isOpen={isCategoryModalOpen} onClose={() => setIsCategoryModalOpen(false)} categories={categories} onAdd={async (formData) => { const r = await dispatch(addCategory(formData)); }} onDelete={(id) => { if (confirm("Delete category?")) dispatch(deleteCategory(id)); }} />
+      <ManageCategoriesModal isOpen={isCategoryModalOpen} onClose={() => setIsCategoryModalOpen(false)} categories={categories} onAdd={async (formData) => { const r = await dispatch(addCategory(formData)); }} onEdit={handleEditCategory} onDelete={(id) => { if (confirm("Delete category?")) dispatch(deleteCategory(id)); }} />
     </main>
   );
 }

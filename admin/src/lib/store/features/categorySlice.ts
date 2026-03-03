@@ -48,6 +48,26 @@ export const addCategory = createAsyncThunk(
   }
 );
 
+export const updateCategory = createAsyncThunk(
+  'categories/update',
+  async ({ id, formData }: { id: string; formData: FormData }, { rejectWithValue }) => {
+    try {
+      console.log("heyy")
+      const response = await api.put(`/categories/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log(response)
+      return response.data.data.category;
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      return rejectWithValue(err.response?.data?.message || 'Failed to update category');
+    }
+  }
+);
+
+
 export const deleteCategory = createAsyncThunk(
   'categories/delete',
   async (id: string, { rejectWithValue }) => {
@@ -77,6 +97,14 @@ const categorySlice = createSlice({
       .addCase(addCategory.fulfilled, (state, action) => {
         state.categories.push(action.payload);
         state.categories.sort((a, b) => a.name.localeCompare(b.name));
+      })
+      // Update
+      .addCase(updateCategory.fulfilled, (state, action) => {
+        const index = state.categories.findIndex((c) => c.id === action.payload.id);
+        if (index !== -1) {
+          state.categories[index] = action.payload;
+          state.categories.sort((a, b) => a.name.localeCompare(b.name));
+        }
       })
       // Delete
       .addCase(deleteCategory.fulfilled, (state, action) => {

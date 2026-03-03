@@ -3,12 +3,15 @@ import {
   getAllCategories,
   createCategory,
   deleteCategory,
+  updateCategory,
 } from "../controllers/category.controller";
 import { requireRole } from "../middlewares/role.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import {
   CreateCategoryBody,
   DeleteCategoryParams,
+  UpdateCategoryBody,
+  UpdateCategoryParams,
 } from "../validation/category.schema";
 import { upload } from "../utils/upload";
 import { resolveTenant } from "../middlewares/restaurant.middleware";
@@ -29,6 +32,16 @@ router.post(
   validate(CreateCategoryBody),
   resolveTenant,
   createCategory,
+);
+
+router.put(
+  "/:id",
+  requireRole(["RESTAURANT_OWNER"]),
+  upload.single("image"),
+  validate(UpdateCategoryParams, "params"),
+  validate(UpdateCategoryBody),
+  resolveTenant,
+  updateCategory,
 );
 
 router.delete(

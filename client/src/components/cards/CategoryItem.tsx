@@ -9,6 +9,11 @@ interface Props {
 }
 
 export default function CategoryItem({ name, image, isActive, onClick }: Props) {
+
+  const imageUrl = image
+    ? `${process.env.NEXT_PUBLIC_API_URL}${image}`
+    : null;
+
   return (
     <div 
       onClick={onClick}
@@ -35,7 +40,7 @@ export default function CategoryItem({ name, image, isActive, onClick }: Props) 
          {/* Category Image */}
          {image && (
           <Image 
-            src={image} 
+            src={imageUrl || ''} 
             alt={name} 
             fill 
             sizes="64px"

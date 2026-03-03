@@ -4,6 +4,8 @@ import { TypedRequest } from "../types/request";
 import {
   CreateCategoryBody,
   DeleteCategoryParams,
+  UpdateCategoryBody,
+  UpdateCategoryParams,
 } from "../validation/category.schema";
 import { deleteFileByUrl } from "../utils/file";
 
@@ -38,7 +40,7 @@ export async function createCategory(
     const { id: restaurantId } = req.restaurant!;
 
     let { name } = req.body;
-    name = name.trim().toLocaleLowerCase();
+    name = name.trim();
 
     let image: string | null = null;
     if (req.file) {
@@ -68,6 +70,63 @@ export async function createCategory(
     }
 
     console.log("CATEGORY_CREATE_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+export async function updateCategory(
+  req: TypedRequest<UpdateCategoryParams, UpdateCategoryBody, {}>,
+  res: Response,
+) {
+  try {
+    const { id } = req.params;
+    const { id: restaurantId } = req.restaurant!;
+
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        id,
+        restaurantId,
+      },
+    });
+
+    if (!existingCategory) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    const updateData: any = {};
+
+    if (req.body.name) {
+      updateData.name = req.body.name.trim()
+    }
+
+    if (req.file) {
+      updateData.image = `/uploads/${req.file.filename}`;
+
+      if (existingCategory.image) {
+        deleteFileByUrl(existingCategory.image);
+      }
+    }
+
+    const updatedCategory = await prisma.category.update({
+      where: { id },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        image: true,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Category updated successfully",
+      data: { category: updatedCategory },
+    });
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      return res.status(409).json({ message: "Category name already exists" });
+    }
+
+    console.log("CATEGORY_UPDATE_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }

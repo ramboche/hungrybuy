@@ -53,7 +53,11 @@ export default function LoginPage() {
   const handleVerifyOtp = async (otp: string) => {
     setIsLoading(true);
     try {
-      const res = await api.post("/auth/login", { phone: phoneNumber, otp }, { withCredentials: true });
+      const res = await api.post(
+        "/auth/login",
+        { phone: phoneNumber, otp },
+        { withCredentials: true },
+      );
 
       const { accessToken, data } = res.data;
       login(accessToken, data.user);

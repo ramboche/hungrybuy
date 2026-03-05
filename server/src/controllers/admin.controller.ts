@@ -68,8 +68,8 @@ export async function adminLogin(
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/admin/login",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        path: "/auth/refresh",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .json({

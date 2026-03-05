@@ -70,7 +70,7 @@ export async function loginUser(
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/auth/refresh",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -142,7 +142,7 @@ export async function refreshToken(req: TypedRequest, res: Response) {
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/auth/refresh",
       maxAge: 7 * 24 * 40 * 60 * 1000,
     });
@@ -176,7 +176,7 @@ export async function logout(req: TypedRequest, res: Response) {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/auth/refresh",
     });
 

@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - pghungrybuy:/var/lib/postgresql/data/4
+      - pghungrybuy:/var/lib/postgresql/data
     networks:
       - app-network
 
@@ -15,11 +15,11 @@ services:
     image: redis:7
     container_name: hungrybuy-redis
     command: >
-      sh -c "
+      redis-server
       --appendonly yes
       --maxmemory ${REDIS_MAX_MEMORY}
       --maxmemory-policy ${REDIS_MAX_MEMORY_POLICY}
-      --requirepass ${REDIS_PASSWORD}"
+      --requirepass ${REDIS_PASSWORD}
     volumes:
       - redisdata:/data
     networks:
@@ -74,4 +74,3 @@ networks:
   app-network:
     name: hungrybuy-net
     driver: bridge
-    internal: true
